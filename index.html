@@ -51,14 +51,14 @@
         </div>
         <div class="hero-dashboard">
           <div class="hero-score">
-            <span class="metric-label">BUILD SCORE</span>
+            <span class="metric-label metric-with-info">BUILD SCORE <button class="info-dot" type="button" aria-label="What is Build Score?" data-info="Build Score combines component performance, workload fit, budget use, memory, and platform quality into a 0–100 summary.">?</button></span>
             <strong id="heroScore">—</strong>
             <small>/ 100</small>
           </div>
           <div class="mini-metrics">
-            <div><span>Estimated total</span><strong id="heroTotal">₹0</strong></div>
-            <div><span>Budget headroom</span><strong id="heroHeadroom">₹0</strong></div>
-            <div><span>GPU share</span><strong id="heroGpuShare">0%</strong></div>
+            <div><span class="metric-with-info">Estimated total <button class="info-dot" type="button" aria-label="What is Estimated Total?" data-info="Estimated Total is the sum of the illustrative catalog prices for all selected components. It is not a live retailer price.">?</button></span><strong id="heroTotal">₹0</strong></div>
+            <div><span class="metric-with-info">Budget headroom <button class="info-dot" type="button" aria-label="What is Budget Headroom?" data-info="Budget Headroom is the part of your target budget that remains after the recommended components are added together.">?</button></span><strong id="heroHeadroom">₹0</strong></div>
+            <div><span class="metric-with-info">GPU share <button class="info-dot" type="button" aria-label="What is GPU Share?" data-info="GPU Share shows what percentage of the recommended build cost is allocated to the graphics card.">?</button></span><strong id="heroGpuShare">0%</strong></div>
           </div>
         </div>
       </section>
@@ -198,12 +198,12 @@
                 <small id="budgetMeta">—</small>
               </div>
               <div class="summary-card">
-                <span class="metric-label">OPTIMIZATION SCORE</span>
+                <span class="metric-label metric-with-info">OPTIMIZATION SCORE <button class="info-dot" type="button" aria-label="What is Optimization Score?" data-info="This score summarizes how well the recommended parts balance your workload, budget, compatibility, and upgrade requirements.">?</button></span>
                 <strong id="buildScore">0</strong>
                 <small>Budget + workload balance</small>
               </div>
               <div class="summary-card">
-                <span class="metric-label">ESTIMATED SYSTEM DRAW</span>
+                <span class="metric-label metric-with-info">ESTIMATED SYSTEM DRAW <button class="info-dot" type="button" aria-label="What is Estimated System Draw?" data-info="Estimated System Draw is an approximate system power requirement based on the selected CPU, GPU, and supporting components.">?</button></span>
                 <strong id="powerDraw">0 W</strong>
                 <small id="powerNote">—</small>
               </div>
@@ -211,7 +211,7 @@
 
             <div class="budget-rail">
               <div class="budget-rail-head">
-                <span>Budget utilization</span>
+                <span class="metric-with-info">Budget utilization <button class="info-dot" type="button" aria-label="What is Budget Utilization?" data-info="Budget Utilization shows how much of your target budget is being used by the recommended build.">?</button></span>
                 <strong id="budgetUtilization">0%</strong>
               </div>
               <div class="rail-track"><span id="budgetFill"></span></div>
@@ -303,7 +303,7 @@
         <div class="analysis-grid">
           <article class="panel chart-card">
             <div class="card-head">
-              <div><span class="section-kicker">COST ALLOCATION</span><h3>Where your budget goes</h3></div>
+              <div><span class="section-kicker metric-with-info">COST ALLOCATION <button class="info-dot" type="button" aria-label="What is Cost Allocation?" data-info="Cost Allocation shows how the recommended budget is distributed across the main PC components.">?</button></span><h3>Where your budget goes</h3></div>
               <span id="allocationTotal">₹0</span>
             </div>
             <div class="allocation-list" id="allocationList"></div>
@@ -311,7 +311,7 @@
 
           <article class="panel workload-card">
             <div class="card-head">
-              <div><span class="section-kicker">WORKLOAD FIT</span><h3 id="fitTitle">Gaming profile</h3></div>
+              <div><span class="section-kicker metric-with-info">WORKLOAD FIT <button class="info-dot" type="button" aria-label="What is Workload Fit?" data-info="Workload Fit estimates how well the selected CPU, GPU, memory, and storage suit the chosen workload such as gaming, creator work, productivity, or AI/ML.">?</button></span><h3 id="fitTitle">Gaming profile</h3></div>
               <span class="fit-score" id="fitScore">0%</span>
             </div>
             <div class="fit-meter"><span id="fitFill"></span></div>
@@ -328,7 +328,7 @@
 
           <article class="panel benchmark-card">
             <div class="card-head">
-              <div><span class="section-kicker">BALANCE CHECK</span><h3>System balance</h3></div>
+              <div><span class="section-kicker metric-with-info">BALANCE CHECK <button class="info-dot" type="button" aria-label="What is Balance Check?" data-info="Balance Check looks for obvious CPU, GPU, memory, power, and cooling imbalances in the recommended system.">?</button></span><h3>System balance</h3></div>
               <span id="balanceLabel">Balanced</span>
             </div>
             <div class="balance-list" id="balanceList"></div>

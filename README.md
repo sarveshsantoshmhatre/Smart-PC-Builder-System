@@ -30,6 +30,20 @@ Many users struggle to choose compatible PC components that maximize performance
 - Basic server-side rate limiting and input limits
 - GitHub Pages deployment for the public website
 - GitHub Actions deployment for the Puter AI Worker
+- Interactive 3D build studio powered by Three.js r186 (three 0.186.0)
+- 3D orbit, zoom, perspective/front/side/top views, auto-rotate, cutaway, explode, and component focus
+- Budget presets and GPU-vendor preference
+- Balanced / performance-first / upgrade-headroom optimization modes
+- Alternative build comparison: balanced, GPU-first, CPU-first
+- Shareable build URLs with configuration encoded in the query string
+- Export build as JSON and copy a build summary
+- Workload-fit, cost-allocation, system-balance, and upgrade-roadmap analysis
+
+## 3D visualization
+
+The public site includes a procedural Three.js build viewer. It does not download product CAD files; the scene is a conceptual representation of the selected CPU, GPU, motherboard, memory, storage, PSU, cooler, fans, and case. The viewer is intentionally lightweight so it can run as a static GitHub Pages site.
+
+Controls include orbit/zoom, camera presets, auto-rotate, cutaway mode, exploded view, and component focus.
 
 ## Architecture
 

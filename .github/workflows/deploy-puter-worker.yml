@@ -1,0 +1,28 @@
+name: Deploy Smart PC Builder AI Worker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "worker/**"
+      - ".github/workflows/deploy-puter-worker.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Deploy Puter Worker
+        uses: HeyPuter/puter-worker-deploy-action@v1.0.1
+        with:
+          worker_name: smart-pc-builder-ai
+          puter_path: ~/Workers/smart-pc-builder-ai/
+          source_path: worker
+          entry_file: index.js
+          puter_token: ${{ secrets.PUTER_TOKEN }}

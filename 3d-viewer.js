@@ -1,7 +1,4 @@
 
-import * as THREE from "https://esm.sh/three@0.186.0";
-import { OrbitControls } from "https://esm.sh/three@0.186.0/examples/jsm/controls/OrbitControls.js";
-
 const root=document.getElementById("pcViewer");
 const status=document.getElementById("viewerStatus");
 const loading=document.getElementById("viewerLoading");
@@ -12,6 +9,7 @@ const cutawayBtn=document.getElementById("cutawayBtn");
 const resetViewBtn=document.getElementById("resetViewBtn");
 
 let renderer,scene,camera,controls,buildGroup,caseGroup,componentGroups={};
+const drag={active:false,x:0,y:0,rx:0,ry:0};
 let autoRotate=false,exploded=false,cutaway=true,focused="overview";
 
 const homePosition=new THREE.Vector3(5.8,4.1,6.6);
@@ -48,6 +46,7 @@ function disposeGroup(group){
 }
 
 function init(){
+  if(typeof THREE==="undefined"){status.textContent="3D engine failed to load";loading.textContent="3D engine could not load. Check your internet connection and refresh.";return;}
   scene=new THREE.Scene();
 
   camera=new THREE.PerspectiveCamera(34,1,.1,100);
@@ -58,11 +57,22 @@ function init(){
   renderer.setClearColor(0x000000,0);
   root.prepend(renderer.domElement);
 
-  controls=new OrbitControls(camera,renderer.domElement);
-  controls.enableDamping=true;
-  controls.dampingFactor=.075;
-  controls.minDistance=3.4;
-  controls.maxDistance=11;
+  controls={target:homeTarget.clone(),distance:8.6};
+  renderer.domElement.addEventListener("pointerdown",function(e){drag.active=true;drag.x=e.clientX;drag.y=e.clientY;renderer.domElement.setPointerCapture(e.pointerId);});
+  renderer.domElement.addEventListener("pointermove",function(e){
+    if(!drag.active)return;
+    const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+    drag.x=e.clientX;drag.y=e.clientY;
+    buildGroup.rotation.y+=dx*.008;
+    drag.ry=Math.max(-.9,Math.min(.9,drag.ry+dy*.006));
+  });
+  renderer.domElement.addEventListener("pointerup",function(e){drag.active=false;renderer.domElement.releasePointerCapture(e.pointerId);});
+  renderer.domElement.addEventListener("pointerleave",function(){drag.active=false;});
+  renderer.domElement.addEventListener("wheel",function(e){
+    e.preventDefault();
+    controls.distance=Math.max(4,Math.min(13,controls.distance+e.deltaY*.006));
+    camera.position.z=controls.distance;
+  },{passive:false});
   controls.target.copy(homeTarget);
 
   scene.add(new THREE.HemisphereLight(0xb8c9ff,0x101623,2.0));
@@ -96,6 +106,8 @@ function init(){
 
   animate();
   resize();
+
+  if(typeof THREE==="undefined"){status.textContent="3D engine failed to load";loading.textContent="3D engine could not load. Check your internet connection and refresh.";return;}
 
   const initial=window.__SMART_PC_BUILDER__&&window.__SMART_PC_BUILDER__.build;
   if(initial)renderBuild(initial);
@@ -336,7 +348,7 @@ function resize(){
 function animate(){
   requestAnimationFrame(animate);
   if(autoRotate&&buildGroup)buildGroup.rotation.y+=.0034;
-  controls.update();
+  camera.lookAt(controls.target);
   renderer.render(scene,camera);
 }
 

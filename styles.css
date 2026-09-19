@@ -479,3 +479,22 @@ footer {
 @media print {
   .ai-assistant { display: none !important; }
 }
+
+
+.model-progress {
+  margin-top: 13px;
+  padding: 12px;
+  border: 1px solid #293246;
+  border-radius: 13px;
+  background: rgba(255,255,255,.02);
+}
+.model-progress[hidden] { display: none; }
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  color: #8994aa;
+  font-size: 9px;
+}
+.progress-label span:last-child { color: #b7adff; font-weight: 800; }

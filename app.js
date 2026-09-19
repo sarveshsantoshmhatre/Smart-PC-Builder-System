@@ -389,6 +389,8 @@ $("loadSavedBtn").addEventListener("click", () => {
   try {
     const b = JSON.parse(raw);
     state.build = b;
+    window.__SMART_PC_BUILDER__ = { build: b };
+    window.dispatchEvent(new CustomEvent("spb-build-updated", { detail: b }));
     $("budget").value = b.budget;
     $("budgetRange").value = b.budget;
     $("resolution").value = b.resolution;

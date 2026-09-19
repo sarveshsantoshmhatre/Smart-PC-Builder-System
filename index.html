@@ -168,6 +168,70 @@
         </section>
       </section>
 
+      <section class="panel ai-assistant" id="aiAssistant">
+        <div class="ai-top">
+          <div>
+            <span class="section-kicker">04 · AI RECOMMENDATION ASSISTANT</span>
+            <h2>Ask the builder to think with you</h2>
+            <p>Connect a Gemini API key to get model-generated explanations, trade-offs, upgrade advice, and workload-specific priorities using the current build as context.</p>
+          </div>
+          <div class="ai-actions">
+            <button class="ghost-btn" id="aiSettingsBtn">AI settings</button>
+            <span class="ai-live-badge" id="aiStatus"><i></i> Not connected</span>
+          </div>
+        </div>
+
+        <div class="ai-quick">
+          <button data-question="Why did you choose these CPU and GPU components for my workload?">Why this CPU + GPU?</button>
+          <button data-question="I also want Python, TensorFlow and local AI development. What should I prioritize or change?">Python + TensorFlow</button>
+          <button data-question="Where could I save money without causing a large performance drop?">Where can I save?</button>
+          <button data-question="What are the next three upgrades I should make over the next two years?">Future upgrades</button>
+        </div>
+
+        <div class="chat-log" id="chatLog">
+          <div class="chat-message assistant">
+            <span class="chat-role">AI ASSISTANT</span>
+            <p>Connect Gemini in AI settings, then ask me about the current build. Your API key stays in this browser session and is sent directly to Google’s Gemini API.</p>
+          </div>
+        </div>
+
+        <form class="ai-form" id="aiForm">
+          <textarea id="aiQuestion" rows="2" placeholder="Example: I have ₹1,20,000 and want Python, TensorFlow, gaming and video editing. What should I prioritize?"></textarea>
+          <button class="primary-btn" type="submit" id="aiAskBtn"><span>Ask Gemini</span><span class="arrow">→</span></button>
+        </form>
+        <p class="ai-note">API note: for a production deployment, put the Gemini request behind your own serverless/backend endpoint so an API key is never exposed to the browser.</p>
+
+        <div class="ai-settings" id="aiSettings" hidden>
+          <div class="settings-heading">
+            <div>
+              <span class="section-kicker">GEMINI CONNECTION</span>
+              <h3>AI settings</h3>
+            </div>
+            <button class="ghost-btn" type="button" id="closeAiSettings">Close</button>
+          </div>
+          <div class="ai-setting-grid">
+            <div>
+              <label for="geminiModel">Model</label>
+              <select id="geminiModel">
+                <option value="gemini-3.6-flash" selected>Gemini 3.6 Flash · Stable</option>
+                <option value="gemini-3.7-flash">Gemini 3.7 Flash · Stable</option>
+                <option value="gemini-3.8-flash">Gemini 3.8 Flash · Stable</option>
+                <option value="gemini-2.5-flash">Gemini 2.5 Flash · Stable</option>
+              </select>
+            </div>
+            <div>
+              <label for="geminiKey">Gemini API key</label>
+              <input id="geminiKey" type="password" autocomplete="off" placeholder="Paste your Google AI Studio API key">
+            </div>
+          </div>
+          <div class="settings-actions">
+            <button class="primary-btn" type="button" id="connectAiBtn">Connect for this session</button>
+            <button class="ghost-btn" type="button" id="forgetAiBtn">Clear session key</button>
+          </div>
+          <p class="microcopy">The key is kept only in memory and is not written to localStorage. Google requires the API key on Gemini API requests. citeturn202630search3</p>
+        </div>
+      </section>
+
       <section class="bottom-grid">
         <article class="panel methodology">
           <div class="section-kicker">HOW IT WORKS</div>

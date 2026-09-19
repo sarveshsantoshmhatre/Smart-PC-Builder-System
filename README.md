@@ -48,3 +48,5 @@ The component catalog uses illustrative INR prices and specifications for demons
 ## Tech stack
 
 HTML, CSS and vanilla JavaScript.
+
+Validated with GitHub Actions on pushes to `main`.

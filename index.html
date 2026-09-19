@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Smart PC Builder — build a compatible PC around your budget, inspect the build in 3D, compare alternatives, plan upgrades, and ask cloud AI questions.">
   <meta name="theme-color" content="#070b14">
-  <title>Smart PC Builder — 3D Build Studio</title>
+  <title>Smart PC Builder — Build & Analyze</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -36,8 +36,8 @@
     <main>
       <section class="hero">
         <div class="hero-copy">
-          <span class="eyebrow">PC BUILD OPTIMIZER · 3D BUILD STUDIO</span>
-          <h1>Design the PC. <span>See the PC.</span></h1>
+          <span class="eyebrow">PC BUILD OPTIMIZER · BUILD ANALYSIS</span>
+          <h1>Design the PC. <span>Understand the build.</span></h1>
           <p>Build a compatible system around a real budget, inspect the configuration in an interactive 3D scene, compare alternative allocations, and understand what to upgrade next.</p>
           <div class="hero-actions">
             <a class="primary-btn" href="#builder">Start configuring <span class="arrow">↓</span></a>
@@ -46,7 +46,7 @@
           <div class="hero-trust">
             <span>7-point compatibility validation</span>
             <span>Budget allocation analysis</span>
-            <span>Interactive 3D preview</span>
+            <span>Build analysis & roadmap</span>
           </div>
         </div>
         <div class="hero-dashboard">
@@ -240,8 +240,8 @@
               </article>
               <article class="decision-card">
                 <span class="metric-label">NEXT ACTION</span>
-                <h4 id="nextActionTitle">Inspect the 3D build</h4>
-                <p id="nextAction">Use the 3D studio below to see the physical layout and component emphasis.</p>
+                <h4 id="nextActionTitle">Review the build analysis</h4>
+                <p id="nextAction">Use the analysis section below to understand the allocation, balance, and upgrade path.</p>
               </article>
             </div>
 
@@ -263,64 +263,29 @@
         <div class="section-header">
           <div>
             <span class="section-kicker">04 · 3D BUILD STUDIO</span>
-            <h2>See how your PC comes together</h2>
-            <p>Rotate, zoom, explode the components, and inspect the system layout. The scene is a conceptual visualization based on the selected build, not a CAD-accurate product model.</p>
+            <h2>Interactive 3D visualization</h2>
+            <p>The 3D Build Studio is being prepared for a future release. The builder, compatibility checks, analysis, alternatives, and cloud AI assistant remain available now.</p>
           </div>
-          <div class="studio-status"><i></i><span id="viewerStatus">3D scene ready</span></div>
+          <div class="studio-status coming-soon-status"><i></i><span>Coming soon</span></div>
         </div>
 
-        <div class="studio-grid">
-          <div class="panel viewer-panel">
-            <div class="viewer-toolbar">
-              <div class="viewer-tabs">
-                <button class="viewer-tool active" data-view="perspective">Perspective</button>
-                <button class="viewer-tool" data-view="front">Front</button>
-                <button class="viewer-tool" data-view="side">Side</button>
-                <button class="viewer-tool" data-view="top">Top</button>
-              </div>
-              <div class="viewer-controls">
-                <button class="icon-btn" id="autoRotateBtn">Auto rotate</button>
-                <button class="icon-btn" id="explodeBtn">Explode</button>
-                <button class="icon-btn active" id="cutawayBtn">Cutaway</button>
-                <button class="icon-btn" id="resetViewBtn">Reset view</button>
-              </div>
-            </div>
-            <div class="viewer-stage" id="pcViewer">
-              <div class="viewer-loading" id="viewerLoading">Preparing 3D build…</div>
-              <div class="viewer-hint">Drag to rotate · Scroll to zoom · Double-click to focus</div>
-            </div>
-            <div class="viewer-footer">
-              <div class="focus-control">
-                <label for="focusPart">Focus component</label>
-                <select id="focusPart">
-                  <option value="overview">Whole system</option>
-                </select>
-              </div>
-              <div class="viewer-legend">
-                <span><i class="legend-dot board"></i>Platform</span>
-                <span><i class="legend-dot compute"></i>Compute</span>
-                <span><i class="legend-dot memory"></i>Memory</span>
-                <span><i class="legend-dot cooling"></i>Cooling</span>
-              </div>
+        <div class="coming-soon-panel panel">
+          <div class="coming-soon-orb" aria-hidden="true"><span>3D</span></div>
+          <div class="coming-soon-copy">
+            <span class="section-kicker">FEATURE IN DEVELOPMENT</span>
+            <h3>3D Build Studio — Coming Soon</h3>
+            <p>We’re working on an interactive PC visualization where you’ll be able to rotate the case, inspect components, explore the internal layout, and view the recommended build from different angles.</p>
+            <div class="coming-soon-features">
+              <span>Interactive rotation</span>
+              <span>Component inspection</span>
+              <span>Exploded view</span>
+              <span>Case cutaway</span>
             </div>
           </div>
-
-          <aside class="panel studio-info">
-            <div class="panel-title">
-              <div>
-                <span class="section-kicker">BUILD SNAPSHOT</span>
-                <h3>What you're looking at</h3>
-              </div>
-            </div>
+          <aside class="coming-soon-snapshot">
+            <span class="section-kicker">CURRENT BUILD</span>
+            <h4>Build snapshot</h4>
             <div class="snapshot-list" id="snapshotList"></div>
-
-            <div class="studio-tip">
-              <span class="tip-icon">3D</span>
-              <div>
-                <strong>Conceptual visualization</strong>
-                <p>The case, motherboard, GPU, RAM, cooler, storage, PSU and fans are proportionally represented from the selected configuration.</p>
-              </div>
-            </div>
           </aside>
         </div>
       </section>
@@ -422,7 +387,7 @@
     <footer>
       <div>
         <strong>Smart PC Builder</strong>
-        <span>Budget-aware recommendations with compatibility validation and interactive 3D visualization.</span>
+        <span>Budget-aware recommendations with compatibility validation, analysis, alternatives, and cloud AI.</span>
       </div>
       <div class="footer-links">
         <a href="#builder">Builder</a>
@@ -452,16 +417,6 @@
   <script src="app.js"></script>
   <script src="puter-config.js"></script>
 
-  <!-- The import map must be parsed before any module script is loaded. -->
-  <script type="importmap">
-{
-  "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js"
-  }
-}
-  </script>
-
   <script type="module" src="puter-ai.js"></script>
-  <script type="module" src="3d-viewer.js"></script>
 </body>
 </html>

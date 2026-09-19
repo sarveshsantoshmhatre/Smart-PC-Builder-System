@@ -20,6 +20,8 @@ jobs:
         run: node --check app.js
       - name: Validate cloud AI client syntax
         run: node --check puter-ai.js
+      - name: Validate Three.js viewer syntax
+        run: node --check 3d-viewer.js
       - name: Validate Puter Worker syntax
         run: node --check worker/index.js
 

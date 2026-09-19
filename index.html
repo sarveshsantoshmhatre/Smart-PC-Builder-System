@@ -451,14 +451,17 @@
 
   <script src="app.js"></script>
   <script src="puter-config.js"></script>
-  <script type="module" src="puter-ai.js"></script>
+
+  <!-- The import map must be parsed before any module script is loaded. -->
   <script type="importmap">
 {
   "imports": {
     "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js"
   }
 }
-</script>
-<script type="module" src="3d-viewer.js"></script>
+  </script>
+
+  <script type="module" src="puter-ai.js"></script>
+  <script type="module" src="3d-viewer.js"></script>
 </body>
 </html>

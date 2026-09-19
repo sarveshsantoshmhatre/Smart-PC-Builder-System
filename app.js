@@ -247,8 +247,8 @@ function renderBuild(build){
   $("whyBuild").textContent=build.gpu.price?"The optimizer keeps the "+build.workload.toLowerCase()+" workload GPU-led while preserving a compatible "+build.cpu.socket+" platform, memory target and PSU envelope.":"The optimizer avoids forcing a discrete GPU and preserves CPU/platform value.";
   $("tradeoffTitle").textContent=build.gpu.vram&&build.gpu.vram<16?"VRAM is the limiting factor":"Budget headroom is the trade-off";
   $("tradeoff").textContent=build.workload==="AI / ML"&&build.gpu.vram<16?"Larger local models may need more VRAM; this catalog build is better suited to smaller workloads.":"You have "+money(headroom)+" unallocated headroom for peripherals, price movement or a future upgrade.";
-  $("nextActionTitle").textContent="Inspect the 3D build";
-  $("nextAction").textContent="Use the 3D studio to see the physical layout, then review cost allocation and the upgrade roadmap.";
+  $("nextActionTitle").textContent="Review the analysis";
+  $("nextAction").textContent="Review the cost allocation, workload fit, compatibility checks, and upgrade roadmap.";
   $("validationCount").textContent=checks.length+" checks";
   $("validationList").innerHTML=checks.map(function(c){
     return '<div class="validation-row '+(c.ok?"ok":"warn")+'"><span class="validation-icon">'+(c.ok?"✓":"!")+'</span><p>'+c.text+"</p></div>";

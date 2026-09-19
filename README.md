@@ -49,12 +49,12 @@ Puter Serverless Worker
 Free/open AI model available in Puter's catalog
 ```
 
-The public JavaScript contains only the Worker URL. The Puter auth token is never placed in the frontend. Puter Workers expose an owner context (`me.puter`) whose AI calls run using the worker owner's resources. citeturn201008search0
+The public JavaScript contains only the Worker URL. The Puter auth token is never placed in the frontend. Puter Workers expose an owner context (`me.puter`) whose AI calls run using the worker owner's resources.
 
 ## Puter setup
 
-1. Create or log into your Puter account and make sure the account email is verified; Puter requires a verified email for creating a Worker. citeturn910370search2
-2. In the Puter dashboard, create/copy your auth token. Keep it secret. Puter documents this token as the credential used for backend/CLI automation. citeturn592616search0
+1. Create or log into your Puter account and make sure the account email is verified; Puter requires a verified email for creating a Worker.
+2. In the Puter dashboard, create/copy your auth token. Keep it secret. Puter documents this token as the credential used for backend/CLI automation.
 3. In this GitHub repository, open **Settings → Secrets and variables → Actions → New repository secret**.
 4. Create a secret named `PUTER_TOKEN` and paste the Puter auth token there.
 5. Push the repository to `main`, or manually run **Deploy Smart PC Builder AI Worker** from **Actions**.
@@ -62,7 +62,7 @@ The public JavaScript contains only the Worker URL. The Puter auth token is neve
    `https://smart-pc-builder-ai.puter.work`
 7. The website already points to that Worker URL in `puter-config.js`.
 
-The worker dynamically selects an available open/free model from the Puter catalog, preferring Qwen when a free variant is available. Puter documents `:free` model variants as provider-controlled free tiers with rate limits/daily quotas, and availability can change. citeturn557219search2
+The worker dynamically selects an available open/free model from the Puter catalog, preferring Qwen when a free variant is available. Puter documents `:free` model variants as provider-controlled free tiers with rate limits/daily quotas, and availability can change.
 
 ## Important security note
 
@@ -79,9 +79,9 @@ Because this design intentionally lets visitors use AI without signing into Pute
 
 ## Cost / free-model note
 
-Puter's normal browser-side model is User-Pays: users authenticate with Puter and their own usage is metered to their account. This project deliberately uses a different architecture: the Worker calls AI through the worker owner's `me.puter` context, so the AI requests use the owner's Puter resources instead. citeturn250832search1turn201008search0
+Puter's normal browser-side model is User-Pays: users authenticate with Puter and their own usage is metered to their account. This project deliberately uses a different architecture: the Worker calls AI through the worker owner's `me.puter` context, so the AI requests use the owner's Puter resources instead.
 
-The project asks the Worker to use an open/free model variant. "Free" does not mean unlimited: providers can impose rate limits or daily quotas, and Puter can change which `:free` variants are available. citeturn557219search2
+The project asks the Worker to use an open/free model variant. "Free" does not mean unlimited: providers can impose rate limits or daily quotas, and Puter can change which `:free` variants are available.
 
 ## Run locally
 

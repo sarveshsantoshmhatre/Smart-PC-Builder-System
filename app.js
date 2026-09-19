@@ -227,6 +227,8 @@ function generateBuild() {
   build.overBudget = build.total > build.budget;
 
   state.build = build;
+  window.__SMART_PC_BUILDER__ = { build };
+  window.dispatchEvent(new CustomEvent("spb-build-updated", { detail: build }));
   localStorage.setItem("spb:lastBuild", JSON.stringify(build));
   renderBuild(build);
 }

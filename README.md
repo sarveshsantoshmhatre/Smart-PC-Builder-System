@@ -23,9 +23,11 @@ This platform simplifies the process by automatically generating an optimized PC
 - Local browser persistence using localStorage
 - Print / Save as PDF workflow
 - Fully responsive layout for desktop, tablet and mobile
-- Gemini-powered AI Recommendation Assistant using the official Gemini REST API
+- Local AI Recommendation Assistant powered by the open Qwen3-0.6B-Instruct ONNX model
+- Runs entirely in the browser with Transformers.js; no API key, signup, or backend is required
 - AI chat uses the current generated build as structured context
-- API key is held in browser memory for the current session only
+- WebGPU acceleration when available, with CPU/WASM fallback
+- Model files are cached by the browser after first download
 - No backend or build step required
 
 ## Run locally
@@ -47,6 +49,8 @@ The repository includes a GitHub Actions workflow for GitHub Pages. The workflow
 ## Important note
 
 The component catalog uses illustrative INR prices and specifications for demonstration. It is not a live retailer-price feed and should be replaced with a maintained catalog or API before production use.
+
+The local AI uses `onnx-community/Qwen3-0.6B-Instruct-ONNX` with Transformers.js. The first AI use requires downloading model files from Hugging Face; no account or API key is required. The model is licensed Apache-2.0.
 
 ## Tech stack
 

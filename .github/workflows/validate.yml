@@ -18,8 +18,10 @@ jobs:
 
       - name: Validate JavaScript syntax
         run: node --check app.js
-      - name: Validate local AI module syntax
-        run: node --check local-ai.js
+      - name: Validate cloud AI client syntax
+        run: node --check puter-ai.js
+      - name: Validate Puter Worker syntax
+        run: node --check worker/index.js
 
       - name: Verify required web files
         run: |

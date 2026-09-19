@@ -204,7 +204,7 @@
           <textarea id="aiQuestion" rows="2" placeholder="Example: I have ₹1,20,000 and want Python, TensorFlow, gaming and video editing. What should I prioritize?" disabled></textarea>
           <button class="primary-btn" type="submit" id="aiAskBtn" disabled><span>Load AI first</span><span class="arrow">→</span></button>
         </form>
-        <p class="ai-note">Model: Qwen3-0.6B-Instruct-ONNX, an open Apache-2.0 model adapted for Transformers.js. It runs on-device using WebGPU when available, with a CPU/WASM fallback. citeturn643075search1turn643075search2turn643075search0</p>
+        <p class="ai-note">Model: Qwen3-0.6B-Instruct-ONNX, an open Apache-2.0 model adapted for Transformers.js. It runs on-device using WebGPU when available, with a CPU/WASM fallback.</p>
       </section>
 
       <section class="bottom-grid">
@@ -236,5 +236,6 @@
 
   <div class="toast" id="toast" role="status"></div>
   <script src="app.js"></script>
+  <script type="module" src="local-ai.js"></script>
 </body>
 </html>

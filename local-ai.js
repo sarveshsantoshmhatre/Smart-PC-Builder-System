@@ -256,9 +256,6 @@ document.querySelectorAll(".ai-quick button").forEach(button => {
   button.addEventListener("click", () => askLocalAI(button.dataset.question));
 });
 
-const originalGenerateBuild = window.generateBuild;
-window.generateBuild = originalGenerateBuild;
-
 window.addEventListener("spb-build-updated", () => {
   aiHistory = [];
 });

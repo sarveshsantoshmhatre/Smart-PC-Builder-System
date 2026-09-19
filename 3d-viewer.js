@@ -218,7 +218,7 @@ function populateFocus(){
     ["cooler","Cooler"],
     ["fans","Case fans"]
   ];
-  focusSelect.innerHTML=options.map(function(x){return "<option value=""+x[0]+"">"+x[1]+"</option>";}).join("");
+  focusSelect.innerHTML=options.map(function(x){return '<option value="'+x[0]+'">'+x[1]+'</option>';}).join("");
   focusSelect.value=focused;
 }
 

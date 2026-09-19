@@ -106,13 +106,11 @@ async function checkCloudAI() {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     cloudReady = true;
     setStatus("Cloud AI online", true);
-    get("aiLoadBtn").textContent = "Cloud AI online";
-    return true;
+        return true;
   } catch (error) {
     cloudReady = false;
     setStatus("Worker not reachable");
-    get("aiLoadBtn").textContent = "Retry connection";
-    appendChat("assistant", `Cloud AI is not connected yet. Deploy the Puter Worker and confirm the URL in puter-config.js. ${error?.message || ""}`);
+        setStatus("Cloud AI unavailable");
     return false;
   }
 }
@@ -179,8 +177,6 @@ async function askCloudAI(question) {
   }
 }
 
-get("aiLoadBtn").addEventListener("click", () => checkCloudAI());
-
 get("aiForm").addEventListener("submit", event => {
   event.preventDefault();
   const value = get("aiQuestion").value;
@@ -197,9 +193,6 @@ get("aiQuestion").addEventListener("keydown", event => {
   }
 });
 
-document.querySelectorAll(".ai-quick button").forEach(button => {
-  button.addEventListener("click", () => askCloudAI(button.dataset.question));
-});
 
 window.addEventListener("spb-build-updated", () => {
   aiHistory = [];

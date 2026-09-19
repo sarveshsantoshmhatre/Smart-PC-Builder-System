@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Smart PC Builder and Budget-Based Component Recommendation System. Build a compatible PC around your budget and use case.">
+  <meta name="theme-color" content="#0b1020">
+  <title>Smart PC Builder | Budget-Based PC Recommendation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="Smart PC Builder home">
+        <span class="brand-mark">SPB</span>
+        <span>
+          <strong>Smart PC Builder</strong>
+          <small>Budget-aware build engine</small>
+        </span>
+      </a>
+      <div class="top-actions">
+        <button class="ghost-btn" id="resetBtn">Reset</button>
+        <button class="primary-btn compact" id="printBtn">Print / Save PDF</button>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="hero-copy">
+          <span class="eyebrow">PC BUILD OPTIMIZER</span>
+          <h1>Turn your budget into a <span>compatible PC.</span></h1>
+          <p>Choose what you need the machine to do. The builder balances performance, compatibility, power headroom, and component value without exceeding your target budget.</p>
+          <div class="hero-chips">
+            <span>Compatibility checks</span>
+            <span>Budget optimization</span>
+            <span>Instant recommendations</span>
+          </div>
+        </div>
+        <div class="hero-stat">
+          <span>BUILD ENGINE</span>
+          <strong id="heroScore">—</strong>
+          <small>Optimization score</small>
+        </div>
+      </section>
+
+      <section class="builder-grid">
+        <aside class="panel controls-panel">
+          <div class="panel-heading">
+            <div>
+              <span class="section-kicker">01 · REQUIREMENTS</span>
+              <h2>Tell us what you need</h2>
+            </div>
+            <span class="step-dot">1</span>
+          </div>
+
+          <div class="field-block">
+            <label for="budget">Target budget</label>
+            <div class="budget-input">
+              <span>₹</span>
+              <input id="budget" type="number" min="35000" max="500000" step="1000" value="100000" inputmode="numeric">
+            </div>
+            <input id="budgetRange" type="range" min="35000" max="500000" step="1000" value="100000" aria-label="Budget slider">
+            <div class="range-hints"><span>₹35k</span><span>₹5L</span></div>
+          </div>
+
+          <div class="field-block">
+            <label>Primary workload</label>
+            <div class="choice-grid" id="useCases">
+              <button class="choice active" data-use="gaming"><span class="choice-icon">G</span><span><b>Gaming</b><small>High FPS & GPU</small></span></button>
+              <button class="choice" data-use="creator"><span class="choice-icon">C</span><span><b>Creator</b><small>Video & 3D</small></span></button>
+              <button class="choice" data-use="productivity"><span class="choice-icon">P</span><span><b>Productivity</b><small>Office & dev</small></span></button>
+              <button class="choice" data-use="ai"><span class="choice-icon">AI</span><span><b>AI / ML</b><small>Compute & VRAM</small></span></button>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field-block">
+              <label for="resolution">Display target</label>
+              <select id="resolution">
+                <option value="1080p">1080p</option>
+                <option value="1440p" selected>1440p</option>
+                <option value="4k">4K</option>
+              </select>
+            </div>
+            <div class="field-block">
+              <label for="cpuPreference">CPU preference</label>
+              <select id="cpuPreference">
+                <option value="any" selected>No preference</option>
+                <option value="amd">AMD</option>
+                <option value="intel">Intel</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field-block">
+              <label for="ramTarget">Memory target</label>
+              <select id="ramTarget">
+                <option value="16">16 GB</option>
+                <option value="32" selected>32 GB</option>
+                <option value="64">64 GB</option>
+              </select>
+            </div>
+            <div class="field-block">
+              <label for="storageTarget">Storage</label>
+              <select id="storageTarget">
+                <option value="1" selected>1 TB NVMe</option>
+                <option value="2">2 TB NVMe</option>
+                <option value="4">4 TB NVMe</option>
+              </select>
+            </div>
+          </div>
+
+          <button class="primary-btn full" id="buildBtn">
+            <span>Generate optimized build</span>
+            <span class="arrow">→</span>
+          </button>
+          <p class="microcopy">Catalog pricing is illustrative. The optimizer is designed to demonstrate the recommendation workflow.</p>
+        </aside>
+
+        <section class="panel results-panel" aria-live="polite">
+          <div class="panel-heading result-heading">
+            <div>
+              <span class="section-kicker">02 · RECOMMENDED BUILD</span>
+              <h2 id="resultTitle">Your 1440p gaming build</h2>
+            </div>
+            <div class="status-badge" id="compatBadge"><span></span> Compatibility checked</div>
+          </div>
+
+          <div class="budget-summary">
+            <div>
+              <span>Estimated total</span>
+              <strong id="totalCost">₹0</strong>
+            </div>
+            <div class="budget-meter">
+              <div class="meter-track"><span id="budgetFill"></span></div>
+              <small id="budgetMeta">—</small>
+            </div>
+            <div class="score-box">
+              <strong id="buildScore">0</strong>
+              <span>score / 100</span>
+            </div>
+          </div>
+
+          <div class="components" id="components"></div>
+
+          <div class="insight-grid">
+            <article class="insight">
+              <div class="insight-icon">↗</div>
+              <div><span>WHY THIS BUILD</span><p id="whyBuild">Generating recommendations based on your requirements.</p></div>
+            </article>
+            <article class="insight">
+              <div class="insight-icon">⚡</div>
+              <div><span>POWER HEADROOM</span><p id="powerNote">—</p></div>
+            </article>
+          </div>
+
+          <div class="validation-card">
+            <div class="validation-heading">
+              <div><span class="section-kicker">03 · VALIDATION</span><h3>Compatibility report</h3></div>
+              <span id="validationCount">0 checks</span>
+            </div>
+            <div id="validationList" class="validation-list"></div>
+          </div>
+        </section>
+      </section>
+
+      <section class="bottom-grid">
+        <article class="panel methodology">
+          <div class="section-kicker">HOW IT WORKS</div>
+          <h2>Recommendation logic</h2>
+          <p>The demo uses a weighted scoring model instead of a single “most expensive component” rule.</p>
+          <div class="logic-steps">
+            <div><strong>01</strong><span>Allocate budget by workload</span></div>
+            <div><strong>02</strong><span>Filter incompatible parts</span></div>
+            <div><strong>03</strong><span>Score performance per rupee</span></div>
+            <div><strong>04</strong><span>Reserve PSU & upgrade headroom</span></div>
+          </div>
+        </article>
+        <article class="panel saved-build">
+          <div class="section-kicker">LOCAL STORAGE</div>
+          <h2>Your last build</h2>
+          <p id="savedText">No saved build yet. Generate a build and it will persist in this browser.</p>
+          <button class="ghost-btn full" id="loadSavedBtn">Load saved build</button>
+        </article>
+      </section>
+    </main>
+
+    <footer>
+      <span>Smart PC Builder and Budget-Based Component Recommendation System</span>
+      <span>Built as a self-contained front-end demo</span>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+  <script src="app.js"></script>
+</body>
+</html>

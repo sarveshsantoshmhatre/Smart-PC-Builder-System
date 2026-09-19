@@ -191,8 +191,9 @@ function componentCard(type,item,percent){
   if(type==="PSU") meta.push(item.watts+" W","80+");
   if(type==="Cooler") meta.push(item.price===0?"Included":"Up to "+item.maxPower+" W");
   if(type==="Case") meta.push(item.gpuClearance+" mm GPU","Airflow");
-  return "<article class="component"><div class="component-head"><span class="component-type">"+type+"</span><span class="component-price">"+money(item.price)+"</span></div><h4>"+item.name+"</h4><div class="component-meta">"+meta.map(function(x){return "<span>"+x+"</span>";}).join("")+"</div><div class="component-bar"><span style="width:"+Math.max(12,Math.min(100,percent))+"%"></span></div></article>";
+  return '<article class="component"><div class="component-head"><span class="component-type">'+type+'</span><span class="component-price">'+money(item.price)+'</span></div><h4>'+item.name+'</h4><div class="component-meta">'+meta.map(function(x){return "<span>"+x+"</span>";}).join("")+'</div><div class="component-bar"><span style="width:'+Math.max(12,Math.min(100,percent))+'%"></span></div></article>';
 }
+
 function validation(build){
   var checks=[],push=function(ok,text){checks.push({ok:ok,text:text});};
   push(build.cpu.socket===build.motherboard.socket,"CPU socket "+build.cpu.socket+" matches the motherboard.");
@@ -249,14 +250,31 @@ function renderBuild(build){
   $("nextActionTitle").textContent="Inspect the 3D build";
   $("nextAction").textContent="Use the 3D studio to see the physical layout, then review cost allocation and the upgrade roadmap.";
   $("validationCount").textContent=checks.length+" checks";
-  $("validationList").innerHTML=checks.map(function(c){return "<div class="validation-row "+(c.ok?"ok":"warn")+""><span class="validation-icon">"+(c.ok?"✓":"!")+"</span><p>"+c.text+"</p></div>";}).join("");
+  $("validationList").innerHTML=checks.map(function(c){
+    return '<div class="validation-row '+(c.ok?"ok":"warn")+'"><span class="validation-icon">'+(c.ok?"✓":"!")+'</span><p>'+c.text+"</p></div>";
+  }).join("");
   $("allocationTotal").textContent=money(build.total);
-  $("allocationList").innerHTML=alloc.map(function(a){return "<div class="allocation-row"><span>"+a.name+"</span><div class="allocation-bar"><span style="width:"+Math.max(6,a.pct)+"%"></span></div><strong>"+money(a.value)+"</strong></div>";}).join("");
-  $("fitTitle").textContent=build.workload+" profile";$("fitScore").textContent=fit.score+"%";$("fitFill").style.width=fit.score+"%";$("fitItems").innerHTML=fit.items.map(function(x){return "<div class="fit-item"><span>"+x[0]+"</span><strong>"+x[1]+"%</strong></div>";}).join("");
-  $("upgradeList").innerHTML=ups.map(function(x){return "<div class="upgrade-row"><span class="upgrade-index">"+x[0]+"</span><div><strong>"+x[1]+"</strong><p>"+x[2]+" "+x[3]+"</p></div></div>";}).join("");
-  $("balanceLabel").textContent=bal.label;$("balanceList").innerHTML=bal.items.map(function(x){return "<div class="balance-row"><div><strong>"+x[0]+"</strong><p>System-level balance signal.</p></div><span class="balance-chip">"+x[1]+"</span></div>";}).join("");
-  $("snapshotList").innerHTML=[["CPU",build.cpu.name],["GPU",build.gpu.name],["RAM",build.ram.name],["Storage",build.storage.name],["Motherboard",build.motherboard.name],["PSU",build.psu.name],["Estimated draw",build.estimatedPower+" W"]].map(function(x){return "<div class="snapshot-row"><span>"+x[0]+"</span><strong>"+x[1]+"</strong></div>";}).join("");
+  $("allocationList").innerHTML=alloc.map(function(a){
+    return '<div class="allocation-row"><span>'+a.name+'</span><div class="allocation-bar"><span style="width:'+Math.max(6,a.pct)+'%"></span></div><strong>'+money(a.value)+"</strong></div>";
+  }).join("");
+  $("fitTitle").textContent=build.workload+" profile";
+  $("fitScore").textContent=fit.score+"%";
+  $("fitFill").style.width=fit.score+"%";
+  $("fitItems").innerHTML=fit.items.map(function(x){
+    return '<div class="fit-item"><span>'+x[0]+'</span><strong>'+x[1]+"%</strong></div>";
+  }).join("");
+  $("upgradeList").innerHTML=ups.map(function(x){
+    return '<div class="upgrade-row"><span class="upgrade-index">'+x[0]+'</span><div><strong>'+x[1]+"</strong><p>"+x[2]+" "+x[3]+"</p></div></div>";
+  }).join("");
+  $("balanceLabel").textContent=bal.label;
+  $("balanceList").innerHTML=bal.items.map(function(x){
+    return '<div class="balance-row"><div><strong>'+x[0]+"</strong><p>System-level balance signal.</p></div><span class=\"balance-chip\">"+x[1]+"</span></div>";
+  }).join("");
+  $("snapshotList").innerHTML=[["CPU",build.cpu.name],["GPU",build.gpu.name],["RAM",build.ram.name],["Storage",build.storage.name],["Motherboard",build.motherboard.name],["PSU",build.psu.name],["Estimated draw",build.estimatedPower+" W"]].map(function(x){
+    return '<div class="snapshot-row"><span>'+x[0]+"</span><strong>"+x[1]+"</strong></div>";
+  }).join("");
 }
+
 function scoreAlternative(cpu,gpu,budget,mode){
   var support=supportCost(cpu,gpu),total=cpu.price+gpu.price+support.total;
   if(total>budget)return -Infinity;
@@ -277,13 +295,20 @@ function buildForMode(mode){
   return best||fallbackBuild(budget);
 }
 function alternativeCard(title,desc,build,badge,mode){
-  return "<article class="alt-card "+(badge==="Current recommendation"?"recommended":"")+"">"+
-    "<div class="alt-top"><div><span class="section-kicker">"+badge+"</span><h3>"+title+"</h3></div><span class="alt-price">"+money(build.total)+"</span></div>"+
-    "<p class="alt-desc">"+desc+"</p><div class="alt-list">"+
-    "<span><span>CPU</span><strong>"+build.cpu.name+"</strong></span><span><span>GPU</span><strong>"+build.gpu.name+"</strong></span>"+
-    "<span><span>RAM</span><strong>"+build.ram.name+"</strong></span><span><span>Score</span><strong>"+(build.score?Math.round(build.score):"—")+"/100</strong></span></div>"+
-    "<div class="alt-actions"><button class="ghost-btn full alt-apply" data-mode=""+mode+"">Use this allocation</button></div></article>";
+  var cls=badge==="Current recommendation"?" recommended":"";
+  return '<article class="alt-card'+cls+'">'+
+    '<div class="alt-top"><div><span class="section-kicker">'+badge+'</span><h3>'+title+'</h3></div><span class="alt-price">'+money(build.total)+'</span></div>'+
+    '<p class="alt-desc">'+desc+'</p>'+
+    '<div class="alt-list">'+
+      '<span><span>CPU</span><strong>'+build.cpu.name+'</strong></span>'+
+      '<span><span>GPU</span><strong>'+build.gpu.name+'</strong></span>'+
+      '<span><span>RAM</span><strong>'+build.ram.name+'</strong></span>'+
+      '<span><span>Score</span><strong>'+Math.round(build.score||0)+'/100</strong></span>'+
+    '</div>'+
+    '<div class="alt-actions"><button class="ghost-btn full alt-apply" data-mode="'+mode+'">Use this allocation</button></div>'+
+  '</article>';
 }
+
 function renderAlternatives(){
   var balanced=buildForMode("balanced"),gpu=buildForMode("gpu"),cpu=buildForMode("cpu");
   $("alternativeGrid").innerHTML=[
@@ -356,13 +381,26 @@ $("randomBuildBtn").addEventListener("click",function(){
 });
 $("alternativesBtn").addEventListener("click",function(){document.getElementById("alternatives").scrollIntoView({behavior:"smooth"});});
 $("openAlternativesBtn").addEventListener("click",function(){
-  var dialog=$("compareDialog"),builds=[["Balanced","Keeps the platform even.",buildForMode("balanced"),"balanced"],["GPU-first","Pushes more budget into graphics.",buildForMode("gpu"),"gpu-first"],["CPU-first","Pushes more budget into CPU-heavy work.",buildForMode("cpu"),"cpu-first"]];
-  $("compareGrid").innerHTML=builds.map(function(item){return "<article class="compare-card"><span class="section-kicker">"+item[0]+"</span><h4>"+item[0]+" configuration</h4><div class="compare-price">"+money(item[2].total)+"</div><p>"+item[1]+"</p><div class="compare-parts"><span>CPU <strong>"+item[2].cpu.name+"</strong></span><span>GPU <strong>"+item[2].gpu.name+"</strong></span><span>RAM <strong>"+item[2].ram.name+"</strong></span></div><button class="primary-btn full compare-use" data-mode=""+item[3]+"">Apply configuration</button></article>";}).join("");
-  $("compareGrid").querySelectorAll(".compare-use").forEach(function(btn){btn.addEventListener("click",function(){
-    state.optimization=btn.dataset.mode==="gpu-first"?"performance":btn.dataset.mode==="cpu-first"?"upgrade":"balanced";$("optimizationMode").value=state.optimization;generateBuild();dialog.close();showToast("Alternative configuration applied.");
-  });});
+  var dialog=$("compareDialog"),builds=[
+    ["Balanced","Keeps the platform even.",buildForMode("balanced"),"balanced"],
+    ["GPU-first","Pushes more budget into graphics.",buildForMode("gpu"),"gpu-first"],
+    ["CPU-first","Pushes more budget into CPU-heavy work.",buildForMode("cpu"),"cpu-first"]
+  ];
+  $("compareGrid").innerHTML=builds.map(function(item){
+    return '<article class="compare-card"><span class="section-kicker">'+item[0]+'</span><h4>'+item[0]+' configuration</h4><div class="compare-price">'+money(item[2].total)+'</div><p>'+item[1]+'</p><div class="compare-parts"><span>CPU <strong>'+item[2].cpu.name+'</strong></span><span>GPU <strong>'+item[2].gpu.name+'</strong></span><span>RAM <strong>'+item[2].ram.name+'</strong></span></div><button class="primary-btn full compare-use" data-mode="'+item[3]+'">Apply configuration</button></article>';
+  }).join("");
+  $("compareGrid").querySelectorAll(".compare-use").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      state.optimization=btn.dataset.mode==="gpu-first"?"performance":btn.dataset.mode==="cpu-first"?"upgrade":"balanced";
+      $("optimizationMode").value=state.optimization;
+      generateBuild();
+      dialog.close();
+      showToast("Alternative configuration applied.");
+    });
+  });
   dialog.showModal();
 });
+
 $("closeCompareBtn").addEventListener("click",function(){$("compareDialog").close();});
 
 loadFromUrl();$("budgetRange").value=$("budget").value;$("headroomToggle").checked=state.headroom;generateBuild();

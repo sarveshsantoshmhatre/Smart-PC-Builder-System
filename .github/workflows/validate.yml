@@ -18,6 +18,8 @@ jobs:
 
       - name: Validate JavaScript syntax
         run: node --check app.js
+      - name: Validate local AI module syntax
+        run: node --check local-ai.js
 
       - name: Verify required web files
         run: |

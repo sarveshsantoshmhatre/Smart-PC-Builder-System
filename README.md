@@ -39,7 +39,7 @@ Then open http://localhost:8000.
 
 ## Deployment
 
-The repository includes a GitHub Actions workflow for GitHub Pages. Enable **Settings → Pages → Source → GitHub Actions** in the repository if Pages is not already enabled.
+The repository includes a GitHub Actions workflow for GitHub Pages. The workflow configures Pages automatically and deploys the root of the repository after pushes to `main`.
 
 ## Important note
 

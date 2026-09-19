@@ -293,7 +293,7 @@ function renderAlternatives(){
   ].join("");
   document.querySelectorAll(".alt-apply").forEach(function(btn){btn.addEventListener("click",function(){
     var m=btn.dataset.mode;
-    state.optimization=m==="balanced"?"balanced":"performance";
+    state.optimization=m==="balanced"?"balanced":(m==="gpu"?"performance":"upgrade");
     $("optimizationMode").value=state.optimization;
     generateBuild();
     showToast(btn.closest(".alt-card").querySelector("h3").textContent+" allocation applied.");

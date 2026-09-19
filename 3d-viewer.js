@@ -1,3 +1,6 @@
+import * as THREE from "three";
+import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/controls/OrbitControls.js";
+
 
 const root=document.getElementById("pcViewer");
 const status=document.getElementById("viewerStatus");
@@ -46,69 +49,6 @@ function disposeGroup(group){
 }
 
 function init(){
-  if(typeof THREE==="undefined"){status.textContent="3D engine failed to load";loading.textContent="3D engine could not load. Check your internet connection and refresh.";return;}
-  scene=new THREE.Scene();
-
-  camera=new THREE.PerspectiveCamera(34,1,.1,100);
-  camera.position.copy(homePosition);
-
-  renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:"high-performance"});
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
-  renderer.setClearColor(0x000000,0);
-  root.prepend(renderer.domElement);
-
-  controls={target:homeTarget.clone(),distance:8.6};
-  renderer.domElement.addEventListener("pointerdown",function(e){drag.active=true;drag.x=e.clientX;drag.y=e.clientY;renderer.domElement.setPointerCapture(e.pointerId);});
-  renderer.domElement.addEventListener("pointermove",function(e){
-    if(!drag.active)return;
-    const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
-    drag.x=e.clientX;drag.y=e.clientY;
-    buildGroup.rotation.y+=dx*.008;
-    drag.ry=Math.max(-.9,Math.min(.9,drag.ry+dy*.006));
-  });
-  renderer.domElement.addEventListener("pointerup",function(e){drag.active=false;renderer.domElement.releasePointerCapture(e.pointerId);});
-  renderer.domElement.addEventListener("pointerleave",function(){drag.active=false;});
-  renderer.domElement.addEventListener("wheel",function(e){
-    e.preventDefault();
-    controls.distance=Math.max(4,Math.min(13,controls.distance+e.deltaY*.006));
-    camera.position.z=controls.distance;
-  },{passive:false});
-  controls.target.copy(homeTarget);
-
-  scene.add(new THREE.HemisphereLight(0xb8c9ff,0x101623,2.0));
-
-  const key=new THREE.DirectionalLight(0xffffff,3.1);
-  key.position.set(5,8,6);
-  scene.add(key);
-
-  const rim=new THREE.DirectionalLight(0x6ee8ff,1.6);
-  rim.position.set(-6,4,-5);
-  scene.add(rim);
-
-  const fill=new THREE.PointLight(0x8e6fff,28,9,2);
-  fill.position.set(3,3,1);
-  scene.add(fill);
-
-  const floor=new THREE.Mesh(
-    new THREE.CircleGeometry(5.2,64),
-    new THREE.MeshStandardMaterial({color:0x08101a,metalness:.08,roughness:1,transparent:true,opacity:.76})
-  );
-  floor.rotation.x=-Math.PI/2;
-  floor.position.y=-.05;
-  scene.add(floor);
-
-  buildGroup=new THREE.Group();
-  scene.add(buildGroup);
-
-  new ResizeObserver(resize).observe(root);
-  root.addEventListener("dblclick",pickByScreen);
-  window.addEventListener("spb-build-updated",function(event){renderBuild(event.detail);});
-
-  animate();
-  resize();
-
-  if(typeof THREE==="undefined"){status.textContent="3D engine failed to load";loading.textContent="3D engine could not load. Check your internet connection and refresh.";return;}
-
   const initial=window.__SMART_PC_BUILDER__&&window.__SMART_PC_BUILDER__.build;
   if(initial)renderBuild(initial);
 }

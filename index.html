@@ -171,13 +171,13 @@
       <section class="panel ai-assistant" id="aiAssistant">
         <div class="ai-top">
           <div>
-            <span class="section-kicker">04 · LOCAL AI RECOMMENDATION ASSISTANT</span>
-            <h2>AI that runs in your browser</h2>
-            <p>Uses an open Qwen model locally in the browser. No API key, account, or Gemini setup is required.</p>
+            <span class="section-kicker">04 · CLOUD AI RECOMMENDATION ASSISTANT</span>
+            <h2>AI powered in the cloud</h2>
+            <p>The AI runs through a serverless Puter Worker. Visitors do not download a model or use their own CPU/GPU for inference.</p>
           </div>
           <div class="ai-actions">
-            <button class="ghost-btn" id="aiLoadBtn">Load local AI</button>
-            <span class="ai-live-badge" id="aiStatus"><i></i> Model not loaded</span>
+            <button class="ghost-btn" id="aiLoadBtn">Check cloud AI</button>
+            <span class="ai-live-badge" id="aiStatus"><i></i> Checking connection…</span>
           </div>
         </div>
 
@@ -188,23 +188,18 @@
           <button data-question="What are the next three upgrades I should make over the next two years?">Future upgrades</button>
         </div>
 
-        <div class="model-progress" id="modelProgress" hidden>
-          <div class="progress-label"><span id="modelProgressText">Preparing local model…</span><span id="modelProgressPct">0%</span></div>
-          <div class="meter-track"><span id="modelProgressFill"></span></div>
-        </div>
-
         <div class="chat-log" id="chatLog">
           <div class="chat-message assistant">
-            <span class="chat-role">LOCAL AI</span>
-            <p>Click “Load local AI”. The first run downloads the model into your browser cache; later visits can reuse the cached model.</p>
+            <span class="chat-role">CLOUD AI</span>
+            <p>The assistant is cloud-backed by the project's Puter Worker. Your browser sends the question and current build context to the worker; no AI model is downloaded to your device.</p>
           </div>
         </div>
 
         <form class="ai-form" id="aiForm">
-          <textarea id="aiQuestion" rows="2" placeholder="Example: I have ₹1,20,000 and want Python, TensorFlow, gaming and video editing. What should I prioritize?" disabled></textarea>
-          <button class="primary-btn" type="submit" id="aiAskBtn" disabled><span>Load AI first</span><span class="arrow">→</span></button>
+          <textarea id="aiQuestion" rows="2" placeholder="Example: I have ₹1,20,000 and want Python, TensorFlow, gaming and video editing. What should I prioritize?"></textarea>
+          <button class="primary-btn" type="submit" id="aiAskBtn"><span>Ask cloud AI</span><span class="arrow">→</span></button>
         </form>
-        <p class="ai-note">Model: Qwen3-0.6B-Instruct-ONNX, an open Apache-2.0 model adapted for Transformers.js. It runs on-device using WebGPU when available, with a CPU/WASM fallback.</p>
+        <p class="ai-note">The selected open/free model and Puter authentication token are kept inside the serverless Worker, not in the public website. Puter free-model availability and provider limits can change over time.</p>
       </section>
 
       <section class="bottom-grid">
@@ -236,6 +231,7 @@
 
   <div class="toast" id="toast" role="status"></div>
   <script src="app.js"></script>
-  <script type="module" src="local-ai.js"></script>
+  <script src="puter-config.js"></script>
+  <script type="module" src="puter-ai.js"></script>
 </body>
 </html>

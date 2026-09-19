@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/controls/OrbitControls.js";
 
 
 const root=document.getElementById("pcViewer");

@@ -23,6 +23,9 @@ This platform simplifies the process by automatically generating an optimized PC
 - Local browser persistence using localStorage
 - Print / Save as PDF workflow
 - Fully responsive layout for desktop, tablet and mobile
+- Gemini-powered AI Recommendation Assistant using the official Gemini REST API
+- AI chat uses the current generated build as structured context
+- API key is held in browser memory for the current session only
 - No backend or build step required
 
 ## Run locally

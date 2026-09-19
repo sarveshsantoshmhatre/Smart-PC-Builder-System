@@ -23,7 +23,7 @@
       </a>
       <nav class="main-nav" aria-label="Primary">
         <a href="#builder">Builder</a>
-        <a href="#studio">3D Studio</a>
+        <a href="#studio">3D · Soon</a>
         <a href="#analysis">Analysis</a>
         <a href="#assistant">AI Assistant</a>
       </nav>
@@ -38,7 +38,7 @@
         <div class="hero-copy">
           <span class="eyebrow">PC BUILD OPTIMIZER · BUILD ANALYSIS</span>
           <h1>Design the PC. <span>Understand the build.</span></h1>
-          <p>Build a compatible system around a real budget, inspect the configuration in an interactive 3D scene, compare alternative allocations, and understand what to upgrade next.</p>
+          <p>Build a compatible system around your budget, validate every core component, compare alternatives, and understand what to upgrade next.</p>
           <div class="hero-actions">
             <a class="primary-btn" href="#builder">Start configuring <span class="arrow">↓</span></a>
             <button class="ghost-btn" id="randomBuildBtn">Generate sample build</button>
@@ -351,36 +351,25 @@
       <section class="panel ai-assistant" id="assistant">
         <div class="section-header compact-head ai-header">
           <div>
-            <span class="section-kicker">07 · CLOUD AI RECOMMENDATION ASSISTANT</span>
-            <h2>Ask questions about this build</h2>
-            <p>The AI runs through the project's Puter Worker, so visitors do not download a model or use their own CPU/GPU for inference.</p>
+            <span class="section-kicker">07 · AI ASSISTANT</span>
+            <h2>Ask about your build</h2>
+            <p>Ask about the selected parts, compatibility, performance, upgrades, or AI/ML suitability.</p>
           </div>
-          <div class="ai-actions">
-            <button class="ghost-btn" id="aiLoadBtn">Check cloud AI</button>
-            <span class="ai-live-badge" id="aiStatus"><i></i> Checking connection…</span>
-          </div>
-        </div>
-
-        <div class="ai-quick">
-          <button data-question="Why did you choose these CPU and GPU components for my workload?">Why this CPU + GPU?</button>
-          <button data-question="I want Python, TensorFlow and local AI development too. What should I prioritize or change?">Python + TensorFlow</button>
-          <button data-question="Where can I save money without causing a large performance drop?">Where can I save?</button>
-          <button data-question="What should I upgrade first over the next two years?">Future upgrades</button>
-          <button data-question="Explain the biggest compatibility risks or limitations in this build.">Compatibility risks</button>
+          <span class="ai-live-badge" id="aiStatus"><i></i> Cloud AI</span>
         </div>
 
         <div class="chat-log" id="chatLog">
           <div class="chat-message assistant">
             <span class="chat-role">CLOUD AI</span>
-            <p>The assistant uses the current builder configuration as context. No AI model is downloaded to your device.</p>
+            <p>Ask a question about the current build. The assistant uses your builder configuration as context.</p>
           </div>
         </div>
 
         <form class="ai-form" id="aiForm">
-          <textarea id="aiQuestion" rows="2" placeholder="Ask about this build, upgrades, performance, AI/ML workloads, or trade-offs."></textarea>
-          <button class="primary-btn" type="submit" id="aiAskBtn"><span>Ask cloud AI</span><span class="arrow">→</span></button>
+          <textarea id="aiQuestion" rows="2" placeholder="Example: Is this build good for Python and TensorFlow?"></textarea>
+          <button class="primary-btn" type="submit" id="aiAskBtn"><span>Ask AI</span><span class="arrow">→</span></button>
         </form>
-        <p class="ai-note">AI pricing, model availability, and quotas depend on the Puter free-model/provider tier. The website's hardware prices remain illustrative.</p>
+        <p class="ai-note">Uses the project's cloud AI Worker. Hardware prices shown by the builder are illustrative.</p>
       </section>
     </main>
 
@@ -391,7 +380,7 @@
       </div>
       <div class="footer-links">
         <a href="#builder">Builder</a>
-        <a href="#studio">3D Studio</a>
+        <a href="#studio">3D · Soon</a>
         <a href="#analysis">Analysis</a>
         <a href="#assistant">AI</a>
       </div>

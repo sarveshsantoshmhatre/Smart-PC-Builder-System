@@ -1,12 +1,10 @@
 # Smart PC Builder and Budget-Based Component Recommendation System
 
-A responsive front-end project that helps users generate a PC build around a target budget and workload.
+A responsive PC recommendation website that builds a compatible configuration around a target budget and workload, then provides an AI assistant for explaining the recommendation.
 
 ## Project idea
 
-Many users struggle to choose compatible PC components that maximize performance without exceeding their budget. Existing solutions often require extensive technical knowledge and manual comparison of hardware specifications.
-
-This platform simplifies the process by automatically generating an optimized PC build based on the user's budget and requirements, checking basic compatibility and presenting the reasoning behind the selection.
+Many users struggle to choose compatible PC components that maximize performance without exceeding their budget. The application simplifies this process by generating an optimized configuration from the user's budget and requirements, validating basic compatibility, and explaining the trade-offs.
 
 ## Features
 
@@ -22,19 +20,72 @@ This platform simplifies the process by automatically generating an optimized PC
 - Cooling-capacity validation
 - Local browser persistence using localStorage
 - Print / Save as PDF workflow
-- Fully responsive layout for desktop, tablet and mobile
-- Local AI Recommendation Assistant powered by the open Qwen3-0.6B-Instruct ONNX model
-- Runs entirely in the browser with Transformers.js; no API key, signup, or backend is required
-- AI chat uses the current generated build as structured context
-- WebGPU acceleration when available, with CPU/WASM fallback
-- Model files are cached by the browser after first download
-- No backend or build step required
+- Responsive desktop, tablet and mobile layout
+- Cloud AI Recommendation Assistant
+- AI inference through a Puter Serverless Worker
+- Open/free model selection happens server-side
+- No AI model download or inference on the visitor's device
+- Puter authentication token is kept in GitHub Actions secrets
+- Streaming AI responses
+- Basic server-side rate limiting and input limits
+- GitHub Pages deployment for the public website
+- GitHub Actions deployment for the Puter AI Worker
+
+## Architecture
+
+```text
+Visitor browser
+    |
+    | question + current PC build context
+    v
+GitHub Pages website
+    |
+    | HTTPS POST
+    v
+Puter Serverless Worker
+    |
+    | server-side Puter context (me.puter)
+    v
+Free/open AI model available in Puter's catalog
+```
+
+The public JavaScript contains only the Worker URL. The Puter auth token is never placed in the frontend. Puter Workers expose an owner context (`me.puter`) whose AI calls run using the worker owner's resources. citeturn201008search0
+
+## Puter setup
+
+1. Create or log into your Puter account and make sure the account email is verified; Puter requires a verified email for creating a Worker. citeturn910370search2
+2. In the Puter dashboard, create/copy your auth token. Keep it secret. Puter documents this token as the credential used for backend/CLI automation. citeturn592616search0
+3. In this GitHub repository, open **Settings → Secrets and variables → Actions → New repository secret**.
+4. Create a secret named `PUTER_TOKEN` and paste the Puter auth token there.
+5. Push the repository to `main`, or manually run **Deploy Smart PC Builder AI Worker** from **Actions**.
+6. The workflow creates/deploys the Worker at:
+   `https://smart-pc-builder-ai.puter.work`
+7. The website already points to that Worker URL in `puter-config.js`.
+
+The worker dynamically selects an available open/free model from the Puter catalog, preferring Qwen when a free variant is available. Puter documents `:free` model variants as provider-controlled free tiers with rate limits/daily quotas, and availability can change. citeturn557219search2
+
+## Important security note
+
+Do **not** put your Puter auth token in:
+- `index.html`
+- `app.js`
+- `puter-config.js`
+- any client-side JavaScript
+- GitHub repository files
+
+The worker is the server-side boundary that keeps the token private.
+
+Because this design intentionally lets visitors use AI without signing into Puter, the Worker endpoint is publicly callable. The included rate limiter reduces casual abuse, but it is not a replacement for full user authentication or an anti-bot service for a high-traffic public deployment.
+
+## Cost / free-model note
+
+Puter's normal browser-side model is User-Pays: users authenticate with Puter and their own usage is metered to their account. This project deliberately uses a different architecture: the Worker calls AI through the worker owner's `me.puter` context, so the AI requests use the owner's Puter resources instead. citeturn250832search1turn201008search0
+
+The project asks the Worker to use an open/free model variant. "Free" does not mean unlimited: providers can impose rate limits or daily quotas, and Puter can change which `:free` variants are available. citeturn557219search2
 
 ## Run locally
 
-Open `index.html` in a browser, or serve the folder with any static web server.
-
-Example:
+Serve the folder with any static web server:
 
 ```bash
 python3 -m http.server 8000
@@ -42,18 +93,21 @@ python3 -m http.server 8000
 
 Then open http://localhost:8000.
 
+Local browser testing of the AI section requires the Puter Worker to already be deployed because the browser is calling the cloud endpoint.
+
 ## Deployment
 
-The repository includes a GitHub Actions workflow for GitHub Pages. The workflow configures Pages automatically and deploys the root of the repository after pushes to `main`.
+The repository includes:
+- a GitHub Pages workflow for the website
+- a validation workflow
+- a GitHub Actions workflow for the Puter AI Worker
 
-## Important note
+## Data and pricing note
 
 The component catalog uses illustrative INR prices and specifications for demonstration. It is not a live retailer-price feed and should be replaced with a maintained catalog or API before production use.
 
-The local AI uses `onnx-community/Qwen3-0.6B-Instruct-ONNX` with Transformers.js. The first AI use requires downloading model files from Hugging Face; no account or API key is required. The model is licensed Apache-2.0.
-
 ## Tech stack
 
-HTML, CSS and vanilla JavaScript.
+HTML, CSS and vanilla JavaScript for the public site, plus a small serverless JavaScript Worker for cloud AI routing.
 
 Validated with GitHub Actions on pushes to `main`.

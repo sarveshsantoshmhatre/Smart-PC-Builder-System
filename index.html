@@ -3,177 +3,392 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Smart PC Builder and Budget-Based Component Recommendation System. Build a compatible PC around your budget and use case.">
-  <meta name="theme-color" content="#0b1020">
-  <title>Smart PC Builder | Budget-Based PC Recommendation</title>
+  <meta name="description" content="Smart PC Builder — build a compatible PC around your budget, inspect the build in 3D, compare alternatives, plan upgrades, and ask cloud AI questions.">
+  <meta name="theme-color" content="#070b14">
+  <title>Smart PC Builder — 3D Build Studio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="app-shell">
-    <header class="topbar">
-      <a class="brand" href="#top" aria-label="Smart PC Builder home">
+    <header class="topbar" id="top">
+      <a class="brand" href="#top" aria-label="Smart PC Builder">
         <span class="brand-mark">SPB</span>
-        <span>
+        <span class="brand-copy">
           <strong>Smart PC Builder</strong>
-          <small>Budget-aware build engine</small>
+          <small>Build · Validate · Visualize</small>
         </span>
       </a>
+      <nav class="main-nav" aria-label="Primary">
+        <a href="#builder">Builder</a>
+        <a href="#studio">3D Studio</a>
+        <a href="#analysis">Analysis</a>
+        <a href="#assistant">AI Assistant</a>
+      </nav>
       <div class="top-actions">
-        <button class="ghost-btn" id="resetBtn">Reset</button>
-        <button class="primary-btn compact" id="printBtn">Print / Save PDF</button>
+        <button class="ghost-btn" id="shareBtn">Share</button>
+        <button class="primary-btn compact" id="printBtn">Export PDF</button>
       </div>
     </header>
 
-    <main id="top">
+    <main>
       <section class="hero">
         <div class="hero-copy">
-          <span class="eyebrow">PC BUILD OPTIMIZER</span>
-          <h1>Turn your budget into a <span>compatible PC.</span></h1>
-          <p>Choose what you need the machine to do. The builder balances performance, compatibility, power headroom, and component value without exceeding your target budget.</p>
-          <div class="hero-chips">
-            <span>Compatibility checks</span>
-            <span>Budget optimization</span>
-            <span>Instant recommendations</span>
+          <span class="eyebrow">PC BUILD OPTIMIZER · 3D BUILD STUDIO</span>
+          <h1>Design the PC. <span>See the PC.</span></h1>
+          <p>Build a compatible system around a real budget, inspect the configuration in an interactive 3D scene, compare alternative allocations, and understand what to upgrade next.</p>
+          <div class="hero-actions">
+            <a class="primary-btn" href="#builder">Start configuring <span class="arrow">↓</span></a>
+            <button class="ghost-btn" id="randomBuildBtn">Generate sample build</button>
+          </div>
+          <div class="hero-trust">
+            <span>7-point compatibility validation</span>
+            <span>Budget allocation analysis</span>
+            <span>Interactive 3D preview</span>
           </div>
         </div>
-        <div class="hero-stat">
-          <span>BUILD ENGINE</span>
-          <strong id="heroScore">—</strong>
-          <small>Optimization score</small>
+        <div class="hero-dashboard">
+          <div class="hero-score">
+            <span class="metric-label">BUILD SCORE</span>
+            <strong id="heroScore">—</strong>
+            <small>/ 100</small>
+          </div>
+          <div class="mini-metrics">
+            <div><span>Estimated total</span><strong id="heroTotal">₹0</strong></div>
+            <div><span>Budget headroom</span><strong id="heroHeadroom">₹0</strong></div>
+            <div><span>GPU share</span><strong id="heroGpuShare">0%</strong></div>
+          </div>
         </div>
       </section>
 
-      <section class="builder-grid">
-        <aside class="panel controls-panel">
-          <div class="panel-heading">
-            <div>
-              <span class="section-kicker">01 · REQUIREMENTS</span>
-              <h2>Tell us what you need</h2>
-            </div>
-            <span class="step-dot">1</span>
-          </div>
-
-          <div class="field-block">
-            <label for="budget">Target budget</label>
-            <div class="budget-input">
-              <span>₹</span>
-              <input id="budget" type="number" min="35000" max="500000" step="1000" value="100000" inputmode="numeric">
-            </div>
-            <input id="budgetRange" type="range" min="35000" max="500000" step="1000" value="100000" aria-label="Budget slider">
-            <div class="range-hints"><span>₹35k</span><span>₹5L</span></div>
-          </div>
-
-          <div class="field-block">
-            <label>Primary workload</label>
-            <div class="choice-grid" id="useCases">
-              <button class="choice active" data-use="gaming"><span class="choice-icon">G</span><span><b>Gaming</b><small>High FPS & GPU</small></span></button>
-              <button class="choice" data-use="creator"><span class="choice-icon">C</span><span><b>Creator</b><small>Video & 3D</small></span></button>
-              <button class="choice" data-use="productivity"><span class="choice-icon">P</span><span><b>Productivity</b><small>Office & dev</small></span></button>
-              <button class="choice" data-use="ai"><span class="choice-icon">AI</span><span><b>AI / ML</b><small>Compute & VRAM</small></span></button>
-            </div>
-          </div>
-
-          <div class="field-row">
-            <div class="field-block">
-              <label for="resolution">Display target</label>
-              <select id="resolution">
-                <option value="1080p">1080p</option>
-                <option value="1440p" selected>1440p</option>
-                <option value="4k">4K</option>
-              </select>
-            </div>
-            <div class="field-block">
-              <label for="cpuPreference">CPU preference</label>
-              <select id="cpuPreference">
-                <option value="any" selected>No preference</option>
-                <option value="amd">AMD</option>
-                <option value="intel">Intel</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="field-row">
-            <div class="field-block">
-              <label for="ramTarget">Memory target</label>
-              <select id="ramTarget">
-                <option value="16">16 GB</option>
-                <option value="32" selected>32 GB</option>
-                <option value="64">64 GB</option>
-              </select>
-            </div>
-            <div class="field-block">
-              <label for="storageTarget">Storage</label>
-              <select id="storageTarget">
-                <option value="1" selected>1 TB NVMe</option>
-                <option value="2">2 TB NVMe</option>
-                <option value="4">4 TB NVMe</option>
-              </select>
-            </div>
-          </div>
-
-          <button class="primary-btn full" id="buildBtn">
-            <span>Generate optimized build</span>
-            <span class="arrow">→</span>
-          </button>
-          <p class="microcopy">Catalog pricing is illustrative. The optimizer is designed to demonstrate the recommendation workflow.</p>
-        </aside>
-
-        <section class="panel results-panel" aria-live="polite">
-          <div class="panel-heading result-heading">
-            <div>
-              <span class="section-kicker">02 · RECOMMENDED BUILD</span>
-              <h2 id="resultTitle">Your 1440p gaming build</h2>
-            </div>
-            <div class="status-badge" id="compatBadge"><span></span> Compatibility checked</div>
-          </div>
-
-          <div class="budget-summary">
-            <div>
-              <span>Estimated total</span>
-              <strong id="totalCost">₹0</strong>
-            </div>
-            <div class="budget-meter">
-              <div class="meter-track"><span id="budgetFill"></span></div>
-              <small id="budgetMeta">—</small>
-            </div>
-            <div class="score-box">
-              <strong id="buildScore">0</strong>
-              <span>score / 100</span>
-            </div>
-          </div>
-
-          <div class="components" id="components"></div>
-
-          <div class="insight-grid">
-            <article class="insight">
-              <div class="insight-icon">↗</div>
-              <div><span>WHY THIS BUILD</span><p id="whyBuild">Generating recommendations based on your requirements.</p></div>
-            </article>
-            <article class="insight">
-              <div class="insight-icon">⚡</div>
-              <div><span>POWER HEADROOM</span><p id="powerNote">—</p></div>
-            </article>
-          </div>
-
-          <div class="validation-card">
-            <div class="validation-heading">
-              <div><span class="section-kicker">03 · VALIDATION</span><h3>Compatibility report</h3></div>
-              <span id="validationCount">0 checks</span>
-            </div>
-            <div id="validationList" class="validation-list"></div>
-          </div>
-        </section>
-      </section>
-
-      <section class="panel ai-assistant" id="aiAssistant">
-        <div class="ai-top">
+      <section class="workflow" id="builder">
+        <div class="workflow-head">
           <div>
-            <span class="section-kicker">04 · CLOUD AI RECOMMENDATION ASSISTANT</span>
-            <h2>AI powered in the cloud</h2>
-            <p>The AI runs through a serverless Puter Worker. Visitors do not download a model or use their own CPU/GPU for inference.</p>
+            <span class="section-kicker">01 · CONFIGURE</span>
+            <h2>Tell the builder what matters</h2>
+          </div>
+          <span class="workflow-note">Every change regenerates the recommendation.</span>
+        </div>
+
+        <div class="builder-layout">
+          <aside class="panel control-panel">
+            <div class="panel-title">
+              <div>
+                <span class="section-kicker">REQUIREMENTS</span>
+                <h3>Build brief</h3>
+              </div>
+              <span class="step-tag">01</span>
+            </div>
+
+            <div class="budget-control">
+              <div class="control-label-row">
+                <label for="budget">Budget</label>
+                <strong id="budgetFormatted">₹1,00,000</strong>
+              </div>
+              <div class="budget-input">
+                <span>₹</span>
+                <input id="budget" type="number" min="35000" max="500000" step="1000" value="100000" inputmode="numeric" aria-label="Budget in Indian rupees">
+              </div>
+              <input id="budgetRange" type="range" min="35000" max="500000" step="1000" value="100000" aria-label="Budget slider">
+              <div class="range-hints"><span>₹35k</span><span>₹5L</span></div>
+              <div class="preset-row">
+                <button type="button" data-budget="60000">₹60k</button>
+                <button type="button" data-budget="80000">₹80k</button>
+                <button type="button" data-budget="100000">₹1L</button>
+                <button type="button" data-budget="150000">₹1.5L</button>
+                <button type="button" data-budget="200000">₹2L</button>
+              </div>
+            </div>
+
+            <div class="field-block">
+              <div class="field-label">Primary workload</div>
+              <div class="choice-grid" id="useCases">
+                <button class="choice active" data-use="gaming"><span class="choice-icon">G</span><span><b>Gaming</b><small>FPS & GPU</small></span></button>
+                <button class="choice" data-use="creator"><span class="choice-icon">C</span><span><b>Creator</b><small>Video & 3D</small></span></button>
+                <button class="choice" data-use="productivity"><span class="choice-icon">P</span><span><b>Productivity</b><small>Dev & office</small></span></button>
+                <button class="choice" data-use="ai"><span class="choice-icon">AI</span><span><b>AI / ML</b><small>VRAM & compute</small></span></button>
+              </div>
+            </div>
+
+            <div class="field-grid">
+              <div class="field-block">
+                <label for="resolution">Display target</label>
+                <select id="resolution">
+                  <option value="1080p">1080p</option>
+                  <option value="1440p" selected>1440p</option>
+                  <option value="4k">4K</option>
+                </select>
+              </div>
+              <div class="field-block">
+                <label for="cpuPreference">CPU vendor</label>
+                <select id="cpuPreference">
+                  <option value="any" selected>Any</option>
+                  <option value="amd">AMD</option>
+                  <option value="intel">Intel</option>
+                </select>
+              </div>
+              <div class="field-block">
+                <label for="gpuPreference">GPU vendor</label>
+                <select id="gpuPreference">
+                  <option value="any" selected>Any</option>
+                  <option value="nvidia">NVIDIA</option>
+                  <option value="amd">AMD</option>
+                  <option value="integrated">Integrated</option>
+                </select>
+              </div>
+              <div class="field-block">
+                <label for="ramTarget">Memory</label>
+                <select id="ramTarget">
+                  <option value="16">16 GB</option>
+                  <option value="32" selected>32 GB</option>
+                  <option value="64">64 GB</option>
+                </select>
+              </div>
+              <div class="field-block">
+                <label for="storageTarget">Storage</label>
+                <select id="storageTarget">
+                  <option value="1" selected>1 TB NVMe</option>
+                  <option value="2">2 TB NVMe</option>
+                  <option value="4">4 TB NVMe</option>
+                </select>
+              </div>
+              <div class="field-block">
+                <label for="optimizationMode">Optimize for</label>
+                <select id="optimizationMode">
+                  <option value="balanced" selected>Balanced value</option>
+                  <option value="performance">Performance first</option>
+                  <option value="upgrade">Upgrade headroom</option>
+                </select>
+              </div>
+            </div>
+
+            <label class="toggle-row">
+              <span>
+                <strong>Keep extra PSU headroom</strong>
+                <small>Prefer a more upgrade-friendly power envelope.</small>
+              </span>
+              <input id="headroomToggle" type="checkbox" checked>
+              <i></i>
+            </label>
+
+            <button class="primary-btn full build-btn" id="buildBtn"><span>Generate optimized build</span><span class="arrow">→</span></button>
+            <button class="ghost-btn full" id="resetBtn">Reset to defaults</button>
+            <p class="disclaimer">Catalog pricing and hardware specifications are illustrative demo data, not a live retailer feed.</p>
+          </aside>
+
+          <section class="panel result-panel" aria-live="polite">
+            <div class="panel-title result-title">
+              <div>
+                <span class="section-kicker">02 · RECOMMENDED BUILD</span>
+                <h3 id="resultTitle">Your 1440p gaming build</h3>
+                <p id="resultSubtitle">Balanced around your target workload and budget.</p>
+              </div>
+              <div class="result-actions">
+                <span class="status-badge" id="compatBadge"><i></i> 7 / 7 checks passed</span>
+                <button class="icon-btn" id="copyBtn" title="Copy build">Copy</button>
+              </div>
+            </div>
+
+            <div class="summary-grid">
+              <div class="summary-card featured">
+                <span class="metric-label">ESTIMATED TOTAL</span>
+                <strong id="totalCost">₹0</strong>
+                <small id="budgetMeta">—</small>
+              </div>
+              <div class="summary-card">
+                <span class="metric-label">OPTIMIZATION SCORE</span>
+                <strong id="buildScore">0</strong>
+                <small>Budget + workload balance</small>
+              </div>
+              <div class="summary-card">
+                <span class="metric-label">ESTIMATED SYSTEM DRAW</span>
+                <strong id="powerDraw">0 W</strong>
+                <small id="powerNote">—</small>
+              </div>
+            </div>
+
+            <div class="budget-rail">
+              <div class="budget-rail-head">
+                <span>Budget utilization</span>
+                <strong id="budgetUtilization">0%</strong>
+              </div>
+              <div class="rail-track"><span id="budgetFill"></span></div>
+              <div class="rail-meta"><span id="budgetLeft">—</span><span id="budgetRight">Target budget</span></div>
+            </div>
+
+            <div class="components-head">
+              <div>
+                <span class="section-kicker">SELECTED PARTS</span>
+                <h4>Core configuration</h4>
+              </div>
+              <button class="ghost-btn tiny" id="alternativesBtn">Compare alternatives</button>
+            </div>
+            <div class="components" id="components"></div>
+
+            <div class="decision-grid">
+              <article class="decision-card">
+                <span class="metric-label">WHY THIS BUILD</span>
+                <h4 id="whyBuildTitle">Balanced component allocation</h4>
+                <p id="whyBuild">Generating the recommendation rationale.</p>
+              </article>
+              <article class="decision-card">
+                <span class="metric-label">MAIN TRADE-OFF</span>
+                <h4 id="tradeoffTitle">—</h4>
+                <p id="tradeoff">—</p>
+              </article>
+              <article class="decision-card">
+                <span class="metric-label">NEXT ACTION</span>
+                <h4 id="nextActionTitle">Inspect the 3D build</h4>
+                <p id="nextAction">Use the 3D studio below to see the physical layout and component emphasis.</p>
+              </article>
+            </div>
+
+            <div class="validation-card">
+              <div class="validation-head">
+                <div>
+                  <span class="section-kicker">03 · VALIDATION</span>
+                  <h4>Compatibility report</h4>
+                </div>
+                <span id="validationCount">0 checks</span>
+              </div>
+              <div id="validationList" class="validation-list"></div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="studio-section" id="studio">
+        <div class="section-header">
+          <div>
+            <span class="section-kicker">04 · 3D BUILD STUDIO</span>
+            <h2>See how your PC comes together</h2>
+            <p>Rotate, zoom, explode the components, and inspect the system layout. The scene is a conceptual visualization based on the selected build, not a CAD-accurate product model.</p>
+          </div>
+          <div class="studio-status"><i></i><span id="viewerStatus">3D scene ready</span></div>
+        </div>
+
+        <div class="studio-grid">
+          <div class="panel viewer-panel">
+            <div class="viewer-toolbar">
+              <div class="viewer-tabs">
+                <button class="viewer-tool active" data-view="perspective">Perspective</button>
+                <button class="viewer-tool" data-view="front">Front</button>
+                <button class="viewer-tool" data-view="side">Side</button>
+                <button class="viewer-tool" data-view="top">Top</button>
+              </div>
+              <div class="viewer-controls">
+                <button class="icon-btn" id="autoRotateBtn">Auto rotate</button>
+                <button class="icon-btn" id="explodeBtn">Explode</button>
+                <button class="icon-btn active" id="cutawayBtn">Cutaway</button>
+                <button class="icon-btn" id="resetViewBtn">Reset view</button>
+              </div>
+            </div>
+            <div class="viewer-stage" id="pcViewer">
+              <div class="viewer-loading" id="viewerLoading">Preparing 3D build…</div>
+              <div class="viewer-hint">Drag to rotate · Scroll to zoom · Double-click to focus</div>
+            </div>
+            <div class="viewer-footer">
+              <div class="focus-control">
+                <label for="focusPart">Focus component</label>
+                <select id="focusPart">
+                  <option value="overview">Whole system</option>
+                </select>
+              </div>
+              <div class="viewer-legend">
+                <span><i class="legend-dot board"></i>Platform</span>
+                <span><i class="legend-dot compute"></i>Compute</span>
+                <span><i class="legend-dot memory"></i>Memory</span>
+                <span><i class="legend-dot cooling"></i>Cooling</span>
+              </div>
+            </div>
+          </div>
+
+          <aside class="panel studio-info">
+            <div class="panel-title">
+              <div>
+                <span class="section-kicker">BUILD SNAPSHOT</span>
+                <h3>What you're looking at</h3>
+              </div>
+            </div>
+            <div class="snapshot-list" id="snapshotList"></div>
+
+            <div class="studio-tip">
+              <span class="tip-icon">3D</span>
+              <div>
+                <strong>Conceptual visualization</strong>
+                <p>The case, motherboard, GPU, RAM, cooler, storage, PSU and fans are proportionally represented from the selected configuration.</p>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="analysis-section" id="analysis">
+        <div class="section-header">
+          <div>
+            <span class="section-kicker">05 · BUILD ANALYSIS</span>
+            <h2>Understand the recommendation</h2>
+            <p>See where the budget goes, what your workload is getting, and what to change later.</p>
+          </div>
+          <button class="ghost-btn" id="exportJsonBtn">Export build JSON</button>
+        </div>
+
+        <div class="analysis-grid">
+          <article class="panel chart-card">
+            <div class="card-head">
+              <div><span class="section-kicker">COST ALLOCATION</span><h3>Where your budget goes</h3></div>
+              <span id="allocationTotal">₹0</span>
+            </div>
+            <div class="allocation-list" id="allocationList"></div>
+          </article>
+
+          <article class="panel workload-card">
+            <div class="card-head">
+              <div><span class="section-kicker">WORKLOAD FIT</span><h3 id="fitTitle">Gaming profile</h3></div>
+              <span class="fit-score" id="fitScore">0%</span>
+            </div>
+            <div class="fit-meter"><span id="fitFill"></span></div>
+            <div class="fit-items" id="fitItems"></div>
+          </article>
+
+          <article class="panel upgrade-card">
+            <div class="card-head">
+              <div><span class="section-kicker">UPGRADE ROADMAP</span><h3>What to upgrade next</h3></div>
+              <span>3 stages</span>
+            </div>
+            <div class="upgrade-list" id="upgradeList"></div>
+          </article>
+
+          <article class="panel benchmark-card">
+            <div class="card-head">
+              <div><span class="section-kicker">BALANCE CHECK</span><h3>System balance</h3></div>
+              <span id="balanceLabel">Balanced</span>
+            </div>
+            <div class="balance-list" id="balanceList"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel alternatives-section" id="alternatives">
+        <div class="section-header compact-head">
+          <div>
+            <span class="section-kicker">06 · ALTERNATIVES</span>
+            <h2>Three ways to spend the same budget</h2>
+            <p>Compare different optimization strategies without changing your inputs.</p>
+          </div>
+          <button class="ghost-btn" id="openAlternativesBtn">Recalculate alternatives</button>
+        </div>
+        <div class="alternative-grid" id="alternativeGrid"></div>
+      </section>
+
+      <section class="panel ai-assistant" id="assistant">
+        <div class="section-header compact-head ai-header">
+          <div>
+            <span class="section-kicker">07 · CLOUD AI RECOMMENDATION ASSISTANT</span>
+            <h2>Ask questions about this build</h2>
+            <p>The AI runs through the project's Puter Worker, so visitors do not download a model or use their own CPU/GPU for inference.</p>
           </div>
           <div class="ai-actions">
             <button class="ghost-btn" id="aiLoadBtn">Check cloud AI</button>
@@ -183,55 +398,60 @@
 
         <div class="ai-quick">
           <button data-question="Why did you choose these CPU and GPU components for my workload?">Why this CPU + GPU?</button>
-          <button data-question="I also want Python, TensorFlow and local AI development. What should I prioritize or change?">Python + TensorFlow</button>
-          <button data-question="Where could I save money without causing a large performance drop?">Where can I save?</button>
-          <button data-question="What are the next three upgrades I should make over the next two years?">Future upgrades</button>
+          <button data-question="I want Python, TensorFlow and local AI development too. What should I prioritize or change?">Python + TensorFlow</button>
+          <button data-question="Where can I save money without causing a large performance drop?">Where can I save?</button>
+          <button data-question="What should I upgrade first over the next two years?">Future upgrades</button>
+          <button data-question="Explain the biggest compatibility risks or limitations in this build.">Compatibility risks</button>
         </div>
 
         <div class="chat-log" id="chatLog">
           <div class="chat-message assistant">
             <span class="chat-role">CLOUD AI</span>
-            <p>The assistant is cloud-backed by the project's Puter Worker. Your browser sends the question and current build context to the worker; no AI model is downloaded to your device.</p>
+            <p>The assistant uses the current builder configuration as context. No AI model is downloaded to your device.</p>
           </div>
         </div>
 
         <form class="ai-form" id="aiForm">
-          <textarea id="aiQuestion" rows="2" placeholder="Example: I have ₹1,20,000 and want Python, TensorFlow, gaming and video editing. What should I prioritize?"></textarea>
+          <textarea id="aiQuestion" rows="2" placeholder="Ask about this build, upgrades, performance, AI/ML workloads, or trade-offs."></textarea>
           <button class="primary-btn" type="submit" id="aiAskBtn"><span>Ask cloud AI</span><span class="arrow">→</span></button>
         </form>
-        <p class="ai-note">The selected open/free model and Puter authentication token are kept inside the serverless Worker, not in the public website. Puter free-model availability and provider limits can change over time.</p>
-      </section>
-
-      <section class="bottom-grid">
-        <article class="panel methodology">
-          <div class="section-kicker">HOW IT WORKS</div>
-          <h2>Recommendation logic</h2>
-          <p>The demo uses a weighted scoring model instead of a single “most expensive component” rule.</p>
-          <div class="logic-steps">
-            <div><strong>01</strong><span>Allocate budget by workload</span></div>
-            <div><strong>02</strong><span>Filter incompatible parts</span></div>
-            <div><strong>03</strong><span>Score performance per rupee</span></div>
-            <div><strong>04</strong><span>Reserve PSU & upgrade headroom</span></div>
-          </div>
-        </article>
-        <article class="panel saved-build">
-          <div class="section-kicker">LOCAL STORAGE</div>
-          <h2>Your last build</h2>
-          <p id="savedText">No saved build yet. Generate a build and it will persist in this browser.</p>
-          <button class="ghost-btn full" id="loadSavedBtn">Load saved build</button>
-        </article>
+        <p class="ai-note">AI pricing, model availability, and quotas depend on the Puter free-model/provider tier. The website's hardware prices remain illustrative.</p>
       </section>
     </main>
 
     <footer>
-      <span>Smart PC Builder and Budget-Based Component Recommendation System</span>
-      <span>Built as a self-contained front-end demo</span>
+      <div>
+        <strong>Smart PC Builder</strong>
+        <span>Budget-aware recommendations with compatibility validation and interactive 3D visualization.</span>
+      </div>
+      <div class="footer-links">
+        <a href="#builder">Builder</a>
+        <a href="#studio">3D Studio</a>
+        <a href="#analysis">Analysis</a>
+        <a href="#assistant">AI</a>
+      </div>
     </footer>
   </div>
 
   <div class="toast" id="toast" role="status"></div>
+
+  <dialog class="compare-dialog" id="compareDialog">
+    <div class="dialog-card">
+      <div class="dialog-head">
+        <div>
+          <span class="section-kicker">COMPARE BUILDS</span>
+          <h3>Different strategies, same brief</h3>
+          <p>Choose a configuration strategy to apply to the main builder.</p>
+        </div>
+        <button class="icon-btn" id="closeCompareBtn" aria-label="Close">Close</button>
+      </div>
+      <div class="compare-grid" id="compareGrid"></div>
+    </div>
+  </dialog>
+
   <script src="app.js"></script>
   <script src="puter-config.js"></script>
   <script type="module" src="puter-ai.js"></script>
+  <script type="module" src="3d-viewer.js"></script>
 </body>
 </html>

@@ -137,7 +137,23 @@ The DataYuge documentation states that its prices are generally updated once per
 
 ## Account system
 
-The website includes a browser login flow powered by Puter.js. Users can sign in with a Puter account, see their current account in the header, sign out, and save up to 20 generated builds to their own app-scoped Puter KV store. Saved builds can be loaded or deleted from the account menu.
+Website authentication is now independent of Puter. Visitors can continue using the PC builder as guests, or choose one of these account methods:
 
-The site itself does not collect or store passwords. Authentication is delegated to Puter's website authentication flow, and the frontend only uses Puter.js browser APIs.
+- Google
+- Microsoft
+- GitHub
+- Email and password
+
+The account UI is powered by Supabase Auth. Supabase documents JavaScript OAuth through `signInWithOAuth`, including Google, GitHub, and Azure/Microsoft providers, and email/password registration through `signUp`. citeturn926348search7turn926348search11turn926348search0turn926348search13
+
+### One-time Supabase setup
+
+1. Create a Supabase project.
+2. Open `supabase-config.js` and replace the placeholder project URL and public anon/publishable key.
+3. Run `supabase-schema.sql` in the Supabase SQL Editor. This creates the `saved_builds` table and Row Level Security policies so users can access only their own saved builds.
+4. In Supabase Authentication → Providers, enable Google, GitHub, and Azure (Microsoft), then add the OAuth application credentials for each provider. Social sign-in requires provider configuration and the Supabase callback URL. citeturn926348search7turn926348search11turn926348search0
+5. Add the deployed GitHub Pages URL to Supabase's allowed redirect/site URL settings.
+6. Enable email/password sign-up in Supabase Auth. Depending on the project's confirmation settings, newly registered email users may need to confirm their address before their first session. citeturn926348search13
+
+Puter remains in the project only for the existing AI and market Worker. A visitor does not need a Puter account to log in to Smart PC Builder.
 

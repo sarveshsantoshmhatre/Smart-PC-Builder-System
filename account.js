@@ -31,10 +31,7 @@
     if (!cfg.anonKey || String(cfg.anonKey).includes("YOUR-SUPABASE-ANON-KEY")){
       return { ready:false, message:"Supabase publishable key is missing from supabase-config.js." };
     }
-    if (!/^https:\/\/[^\\s]+\.supabase\.co$/.test(String(cfg.url))){
-      return { ready:false, message:"Supabase project URL in supabase-config.js is invalid." };
-    }
-    return { ready:true, message:"" };
+    try {\n      const parsed = new URL(String(cfg.url));\n      if (parsed.protocol !== "https:" || !parsed.hostname.endsWith(".supabase.co")) {\n        return { ready:false, message:"Supabase project URL in supabase-config.js is invalid." };\n      }\n    } catch (_error) {\n      return { ready:false, message:"Supabase project URL in supabase-config.js is invalid." };\n    }\n    return { ready:true, message:"" };
   }
 
   function authConfigReady(){

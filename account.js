@@ -2,44 +2,510 @@
   "use strict";
 
   const get = (id) => document.getElementById(id);
-  const puterReady = () => window.puter && puter.auth && puter.kv;
-
   const accountBtn = get("accountBtn");
   const saveBtn = get("saveBuildBtn");
   if (!accountBtn) return;
 
+  let supabaseClient = null;
   let user = null;
-  let menu = null;
-  let outsideHandlerBound = false;
-
-  function builder(){
-    return window.__SMART_PC_BUILDER__ || {};
-  }
+  let accountMenu = null;
+  let authDialog = null;
+  let authMode = "signin";
 
   function toast(message){
     if (typeof window.showToast === "function") window.showToast(message);
   }
 
-  function displayName(profile){
-    return String(
-      profile?.username ||
-      profile?.name ||
-      profile?.email ||
-      "Puter user"
+  function builder(){
+    return window.__SMART_PC_BUILDER__ || {};
+  }
+
+  function authConfigReady(){
+    const cfg = window.SMART_PC_AUTH || {};
+    return Boolean(
+      window.supabase &&
+      typeof window.supabase.createClient === "function" &&
+      /^https:\/\/[^\\s]+\.supabase\.co$/.test(String(cfg.url || "")) &&
+      String(cfg.anonKey || "").length > 20 &&
+      !String(cfg.url || "").includes("YOUR-PROJECT-REF") &&
+      !String(cfg.anonKey || "").includes("YOUR-SUPABASE-ANON-KEY")
     );
   }
 
-  function displayEmail(profile){
-    return String(profile?.email || profile?.username || "");
+  function getClient(){
+    if (!authConfigReady()) return null;
+    if (!supabaseClient){
+      const cfg = window.SMART_PC_AUTH;
+      supabaseClient = window.supabase.createClient(cfg.url, cfg.anonKey, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      });
+    }
+    return supabaseClient;
   }
 
-  function avatarFor(profile){
-    return String(
-      profile?.profile?.picture ||
-      profile?.picture ||
-      profile?.avatar ||
-      ""
-    );
+  function escapeHtml(value){
+    return String(value == null ? "" : value)
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#039;");
+  }
+
+  function displayName(u){
+    const meta = u && u.user_metadata ? u.user_metadata : {};
+    return String(meta.full_name || meta.name || meta.user_name || meta.preferred_username || u?.email || "Account user");
+  }
+
+  function displayEmail(u){
+    return String(u?.email || "");
+  }
+
+  function avatarUrl(u){
+    const meta = u && u.user_metadata ? u.user_metadata : {};
+    return String(meta.avatar_url || meta.picture || "");
+  }
+
+  function redirectUrl(){
+    return window.location.origin + window.location.pathname;
+  }
+
+  function ensureAuthDialog(){
+    if (authDialog) return authDialog;
+
+    authDialog = document.createElement("dialog");
+    authDialog.className = "auth-dialog";
+    authDialog.innerHTML =
+      '<div class="auth-card">' +
+        '<button class="auth-close" type="button" data-auth-action="close">Close</button>' +
+        '<div class="auth-brand">' +
+          '<span class="brand-mark">SPB</span>' +
+          '<div><strong>Smart PC Builder account</strong><small>Choose any sign-in method. No Puter account is required.</small></div>' +
+        '</div>' +
+        '<div class="auth-tabs">' +
+          '<button type="button" data-auth-tab="signin" class="active">Sign in</button>' +
+          '<button type="button" data-auth-tab="signup">Create account</button>' +
+        '</div>' +
+        '<div class="auth-socials">' +
+          '<button class="auth-provider google" type="button" data-provider="google">Continue with Google</button>' +
+          '<button class="auth-provider microsoft" type="button" data-provider="azure">Continue with Microsoft</button>' +
+          '<button class="auth-provider github" type="button" data-provider="github">Continue with GitHub</button>' +
+        '</div>' +
+        '<div class="auth-divider"><span>or use email</span></div>' +
+        '<form id="emailAuthForm" class="auth-form">' +
+          '<label for="authEmail">Email</label>' +
+          '<input id="authEmail" type="email" autocomplete="email" required placeholder="you@example.com">' +
+          '<label for="authPassword">Password</label>' +
+          '<input id="authPassword" type="password" minlength="8" autocomplete="current-password" required placeholder="At least 8 characters">' +
+          '<button class="primary-btn full" id="emailAuthBtn" type="submit">Sign in with email</button>' +
+          '<button class="auth-link" id="forgotPasswordBtn" type="button">Forgot password?</button>' +
+        '</form>' +
+        '<p class="auth-message" id="authMessage" role="status"></p>' +
+        '<button class="auth-guest" type="button" data-auth-action="close">Continue as guest</button>' +
+      '</div>';
+
+    document.body.appendChild(authDialog);
+
+    authDialog.querySelectorAll("[data-auth-tab]").forEach(button => {
+      button.addEventListener("click", () => {
+        authMode = button.dataset.authTab;
+        authDialog.querySelectorAll("[data-auth-tab]").forEach(x => x.classList.toggle("active", x === button));
+        updateAuthMode();
+      });
+    });
+
+    authDialog.querySelectorAll("[data-provider]").forEach(button => {
+      button.addEventListener("click", () => signInWithProvider(button.dataset.provider));
+    });
+
+    get("emailAuthForm").addEventListener("submit", event => {
+      event.preventDefault();
+      submitEmailAuth();
+    });
+
+    get("forgotPasswordBtn").addEventListener("click", sendPasswordReset);
+
+    authDialog.addEventListener("click", event => {
+      const action = event.target.closest?.("[data-auth-action]");
+      if (action?.dataset.authAction === "close") closeAuthDialog();
+    });
+
+    authDialog.addEventListener("cancel", closeAuthDialog);
+    return authDialog;
+  }
+
+  function setAuthMessage(message, kind){
+    const node = get("authMessage");
+    if (!node) return;
+    node.className = "auth-message " + (kind || "");
+    node.textContent = message || "";
+  }
+
+  function setAuthBusy(busy){
+    const dialog = ensureAuthDialog();
+    dialog.querySelectorAll("button,input").forEach(el => { el.disabled = Boolean(busy); });
+  }
+
+  function updateAuthMode(){
+    const submit = get("emailAuthBtn");
+    const forgot = get("forgotPasswordBtn");
+    const password = get("authPassword");
+    if (!submit) return;
+    submit.textContent = authMode === "signin" ? "Sign in with email" : "Create account";
+    forgot.hidden = authMode !== "signin";
+    password.autocomplete = authMode === "signin" ? "current-password" : "new-password";
+    setAuthMessage("");
+  }
+
+  function openAuthDialog(mode){
+    ensureAuthDialog();
+    authMode = mode || "signin";
+    authDialog.querySelectorAll("[data-auth-tab]").forEach(x => x.classList.toggle("active", x.dataset.authTab === authMode));
+    updateAuthMode();
+    if (typeof authDialog.showModal === "function") authDialog.showModal();
+    else authDialog.setAttribute("open","");
+  }
+
+  function closeAuthDialog(){
+    if (!authDialog) return;
+    if (typeof authDialog.close === "function" && authDialog.open) authDialog.close();
+    else authDialog.removeAttribute("open");
+  }
+
+  async function signInWithProvider(provider){
+    const supa = getClient();
+    if (!supa){
+      setAuthMessage("Account login is not configured yet. Add your Supabase project settings to supabase-config.js.","error");
+      return;
+    }
+
+    setAuthBusy(true);
+    setAuthMessage("Opening " + (provider === "azure" ? "Microsoft" : provider === "github" ? "GitHub" : "Google") + " sign-in…");
+
+    try{
+      const { error } = await supa.auth.signInWithOAuth({
+        provider,
+        options: { redirectTo: redirectUrl() }
+      });
+      if (error) throw error;
+    }catch(error){
+      console.error("OAuth sign-in failed:", error);
+      setAuthMessage(error?.message || "Could not start sign-in.","error");
+      setAuthBusy(false);
+    }
+  }
+
+  async function submitEmailAuth(){
+    const supa = getClient();
+    if (!supa){
+      setAuthMessage("Account login is not configured yet. Add your Supabase project settings to supabase-config.js.","error");
+      return;
+    }
+
+    const email = String(get("authEmail")?.value || "").trim();
+    const password = String(get("authPassword")?.value || "");
+    if (!email || !password) return;
+
+    setAuthBusy(true);
+    setAuthMessage(authMode === "signin" ? "Signing you in…" : "Creating your account…");
+
+    try{
+      if (authMode === "signin"){
+        const { error } = await supa.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        closeAuthDialog();
+        toast("Signed in successfully.");
+      }else{
+        const { data, error } = await supa.auth.signUp({
+          email,
+          password,
+          options: { emailRedirectTo: redirectUrl() }
+        });
+        if (error) throw error;
+
+        if (data?.session){
+          closeAuthDialog();
+          toast("Account created.");
+        }else{
+          setAuthMessage("Account created. Check your email to confirm the address, then sign in.","success");
+        }
+      }
+    }catch(error){
+      console.error("Email auth failed:", error);
+      setAuthMessage(error?.message || "Authentication failed.","error");
+    }finally{
+      setAuthBusy(false);
+    }
+  }
+
+  async function sendPasswordReset(){
+    const supa = getClient();
+    if (!supa){
+      setAuthMessage("Account login is not configured yet.","error");
+      return;
+    }
+
+    const email = String(get("authEmail")?.value || "").trim();
+    if (!email){
+      setAuthMessage("Enter your email first.","error");
+      return;
+    }
+
+    setAuthBusy(true);
+    setAuthMessage("Sending password reset email…");
+    try{
+      const { error } = await supa.auth.resetPasswordForEmail(email, { redirectTo: redirectUrl() });
+      if (error) throw error;
+      setAuthMessage("Password reset instructions have been sent if the address is registered.","success");
+    }catch(error){
+      setAuthMessage(error?.message || "Could not send the reset email.","error");
+    }finally{
+      setAuthBusy(false);
+    }
+  }
+
+  function ensureMenu(){
+    if (accountMenu) return accountMenu;
+    accountMenu = document.createElement("div");
+    accountMenu.className = "account-menu";
+    accountMenu.hidden = true;
+    document.body.appendChild(accountMenu);
+    return accountMenu;
+  }
+
+  function positionMenu(){
+    if (!accountMenu || accountMenu.hidden) return;
+    const rect = accountBtn.getBoundingClientRect();
+    const width = Math.min(360, window.innerWidth - 24);
+    const left = Math.min(Math.max(12, rect.right - width), window.innerWidth - width - 12);
+    accountMenu.style.left = Math.max(12, left) + "px";
+    accountMenu.style.top = Math.min(window.innerHeight - accountMenu.offsetHeight - 12, rect.bottom + 10) + "px";
+  }
+
+  function closeMenu(){
+    if (accountMenu) accountMenu.hidden = true;
+  }
+
+  function openMenu(){
+    ensureMenu();
+    accountMenu.hidden = false;
+    renderMenu().finally(positionMenu);
+  }
+
+  function renderAccountButton(){
+    accountBtn.classList.toggle("signed-in", Boolean(user));
+    accountBtn.textContent = "";
+
+    if (!user){
+      accountBtn.textContent = "Sign in";
+      accountBtn.title = "Sign in or create an account";
+      return;
+    }
+
+    const avatar = avatarUrl(user);
+    if (avatar){
+      const image = document.createElement("img");
+      image.className = "account-avatar";
+      image.alt = "";
+      image.src = avatar;
+      accountBtn.appendChild(image);
+    }
+
+    const label = document.createElement("span");
+    label.className = "account-label";
+    label.textContent = displayName(user);
+    accountBtn.appendChild(label);
+    accountBtn.title = "Account: " + displayName(user);
+  }
+
+  async function loadSavedBuilds(){
+    const supa = getClient();
+    if (!supa || !user) return [];
+    const { data, error } = await supa
+      .from("saved_builds")
+      .select("id,title,budget,total,score,build,created_at")
+      .order("created_at",{ascending:false})
+      .limit(20);
+    if (error) throw error;
+    return Array.isArray(data) ? data : [];
+  }
+
+  async function saveBuild(){
+    const build = builder().build;
+    if (!build){
+      toast("Generate a build before saving it.");
+      return;
+    }
+
+    if (!user){
+      openAuthDialog("signin");
+      return;
+    }
+
+    const supa = getClient();
+    if (!supa){
+      toast("Account service is not configured yet.");
+      return;
+    }
+
+    saveBtn.disabled = true;
+    try{
+      const { error } = await supa.from("saved_builds").insert({
+        user_id: user.id,
+        title: build.workload + " · " + build.resolution,
+        budget: Number(build.budget) || 0,
+        total: Number(build.total) || 0,
+        score: Number(build.score) || 0,
+        build: JSON.parse(JSON.stringify(build))
+      });
+      if (error) throw error;
+      toast("Build saved to your account.");
+      if (accountMenu && !accountMenu.hidden) await renderMenu();
+    }catch(error){
+      console.error("Saved build write failed:",error);
+      toast(error?.message || "Could not save the build.");
+    }finally{
+      saveBtn.disabled = false;
+    }
+  }
+
+  async function deleteBuild(id){
+    const supa = getClient();
+    if (!supa || !user) return;
+    try{
+      const { error } = await supa.from("saved_builds").delete().eq("id",id);
+      if (error) throw error;
+      await renderMenu();
+      toast("Saved build deleted.");
+    }catch(error){
+      console.error(error);
+      toast(error?.message || "Could not delete the saved build.");
+    }
+  }
+
+  function applySavedBuild(item){
+    const build = item?.build;
+    const api = builder();
+    if (!build || !api.state || !api.generateBuild){
+      toast("Builder is not ready yet.");
+      return;
+    }
+
+    const byId = (type,id) => (api.catalog?.[type] || []).find(x => x.id === id);
+    const workloadMap = {gaming:"gaming",creator:"creator",productivity:"productivity","ai / ml":"ai"};
+    const wk = workloadMap[String(build.workload || "").toLowerCase()] || "gaming";
+
+    api.state.useCase = wk;
+    api.state.optimization = ["balanced","performance","upgrade"].includes(build.optimization) ? build.optimization : "balanced";
+    api.state.headroom = build.headroomPreference !== false;
+    api.state.manual = {
+      cpuId: byId("cpu",build.cpu?.id)?.id || null,
+      gpuId: byId("gpu",build.gpu?.id)?.id || null,
+      ramId: byId("ram",build.ram?.id)?.id || null,
+      storageId: byId("storage",build.storage?.id)?.id || null
+    };
+
+    const setValue = (id,value) => {
+      const el = get(id);
+      if (el && value != null) el.value = String(value);
+    };
+
+    setValue("budget",build.budget);
+    setValue("budgetRange",build.budget);
+    setValue("resolution",build.resolution);
+    setValue("optimizationMode",api.state.optimization);
+    setValue("ramTarget",build.ram?.gb);
+    setValue("storageTarget",build.storage?.tb);
+
+    const cpuVendor = get("cpuPreference");
+    const gpuVendor = get("gpuPreference");
+    if (cpuVendor) cpuVendor.value = build.cpu?.brand || "any";
+    if (gpuVendor) gpuVendor.value = build.gpu?.brand || "any";
+
+    const headroom = get("headroomToggle");
+    if (headroom) headroom.checked = api.state.headroom;
+
+    document.querySelectorAll(".choice").forEach(btn => {
+      btn.classList.toggle("active",btn.dataset.use === wk);
+    });
+
+    api.generateBuild();
+    closeMenu();
+    get("builder")?.scrollIntoView({behavior:"smooth"});
+    toast("Saved build loaded.");
+  }
+
+  async function renderMenu(){
+    ensureMenu();
+
+    if (!user){
+      accountMenu.innerHTML =
+        '<div class="account-profile"><div><strong>Smart PC Builder account</strong><small>Save builds and access them across visits.</small></div></div>' +
+        '<div class="account-actions">' +
+          '<button class="account-action primary" data-account-action="signin" type="button">Sign in</button>' +
+          '<button class="account-action" data-account-action="signup" type="button">Create account</button>' +
+        '</div>' +
+        '<p class="account-login-note">Choose Google, Microsoft, GitHub, or email/password. Puter is not used for website authentication.</p>';
+      return;
+    }
+
+    let builds = [];
+    let dbError = "";
+    try{
+      builds = await loadSavedBuilds();
+    }catch(error){
+      console.error("Saved builds unavailable:",error);
+      dbError = "Run supabase-schema.sql in your Supabase project to enable saved builds.";
+    }
+
+    const avatar = avatarUrl(user);
+    accountMenu.innerHTML =
+      '<div class="account-profile">' +
+        (avatar ? '<img alt="" src="' + escapeHtml(avatar) + '">' : '<div class="account-avatar" aria-hidden="true"></div>') +
+        '<div><strong>' + escapeHtml(displayName(user)) + '</strong><small>' + escapeHtml(displayEmail(user)) + '</small></div>' +
+      '</div>' +
+      '<div class="account-actions">' +
+        '<button class="account-action" data-account-action="save" type="button">Save current build</button>' +
+        '<button class="account-action" data-account-action="signout" type="button">Sign out</button>' +
+      '</div>' +
+      (dbError
+        ? '<p class="account-login-note">' + escapeHtml(dbError) + '</p>'
+        : '<div style="margin-top:14px;"><span class="section-kicker" style="font-size:10px;">SAVED BUILDS · ' + builds.length + '</span></div>' +
+          '<div class="saved-builds">' +
+            (builds.length
+              ? builds.map(item =>
+                  '<article class="saved-build">' +
+                    '<strong>' + escapeHtml(item.title || "Saved build") + '</strong>' +
+                    '<small>' + escapeHtml(formatDate(item.created_at)) + ' · ₹' + Number(item.total || 0).toLocaleString("en-IN") + ' · ' + escapeHtml(String(item.score || 0)) + '/100</small>' +
+                    '<div class="saved-build-actions">' +
+                      '<button type="button" data-load-id="' + escapeHtml(item.id) + '">Load</button>' +
+                      '<button type="button" data-delete-id="' + escapeHtml(item.id) + '">Delete</button>' +
+                    '</div>' +
+                  '</article>'
+                ).join("")
+              : '<div class="account-empty">No saved builds yet. Generate one and choose “Save build”.</div>') +
+          '</div>'
+      );
+
+    accountMenu.querySelectorAll("[data-load-id]").forEach(button => {
+      button.addEventListener("click", async () => {
+        try{
+          const items = await loadSavedBuilds();
+          const item = items.find(x => String(x.id) === String(button.dataset.loadId));
+          if (item) applySavedBuild(item);
+        }catch(_){
+          toast("Could not load saved builds.");
+        }
+      });
+    });
+
+    accountMenu.querySelectorAll("[data-delete-id]").forEach(button => {
+      button.addEventListener("click",() => deleteBuild(button.dataset.deleteId));
+    });
   }
 
   function formatDate(value){
@@ -53,367 +519,93 @@
     }
   }
 
-  function escapeHtml(value){
-    return String(value == null ? "" : value)
-      .replace(/&/g,"&amp;")
-      .replace(/</g,"&lt;")
-      .replace(/>/g,"&gt;")
-      .replace(/"/g,"&quot;")
-      .replace(/'/g,"&#039;");
-  }
-
-  function ensureMenu(){
-    if(menu) return menu;
-    menu=document.createElement("div");
-    menu.className="account-menu";
-    menu.hidden=true;
-    document.body.appendChild(menu);
-    return menu;
-  }
-
-  function positionMenu(){
-    if(!menu || menu.hidden) return;
-    const rect=accountBtn.getBoundingClientRect();
-    const width=Math.min(340,window.innerWidth-24);
-    const left=Math.min(
-      Math.max(12,rect.right-width),
-      window.innerWidth-width-12
-    );
-    const top=Math.min(
-      window.innerHeight-12-menu.offsetHeight,
-      rect.bottom+10
-    );
-    menu.style.left=Math.max(12,left)+"px";
-    menu.style.top=Math.max(12,top)+"px";
-  }
-
-  function closeMenu(){
-    if(menu) menu.hidden=true;
-  }
-
-  function openMenu(){
-    ensureMenu();
-    menu.hidden=false;
-    positionMenu();
-    renderMenu();
-  }
-
-  function renderAccountButton(){
-    accountBtn.classList.toggle("signed-in",!!user);
-
-    if(!user){
-      accountBtn.textContent="Sign in";
-      return;
-    }
-
-    const name=displayName(user);
-    const image=avatarFor(user);
-    accountBtn.innerHTML=
-      (image ? '<img class="account-avatar" alt="" src="'+escapeHtml(image)+'">' : "")+
-      '<span class="account-label">'+escapeHtml(name)+'</span>';
-    accountBtn.title="Account: "+name;
-  }
-
-  async function loadSavedBuilds(){
-    if(!puterReady() || !user) return [];
-    try{
-      const value=await puter.kv.get("spb:saved-builds");
-      return Array.isArray(value)?value:[];
-    }catch(error){
-      console.error("Saved build load failed:",error);
-      return [];
-    }
-  }
-
-  async function saveBuild(){
-    const build=builder().build;
-    if(!build){
-      toast("Generate a build before saving it.");
-      return;
-    }
-
-    if(!puterReady()){
-      toast("Account service is still loading. Try again.");
-      return;
-    }
-
-    if(!user){
-      try{
-        await puter.auth.signIn();
-        await refreshAuth();
-      }catch(error){
-        toast("Sign-in cancelled.");
-        return;
-      }
-      if(!user) return;
-    }
-
-    saveBtn.disabled=true;
-    const snapshot={
-      id: (crypto.randomUUID ? crypto.randomUUID() : Date.now()+"-"+Math.random()),
-      createdAt:new Date().toISOString(),
-      title: build.workload+" · "+build.resolution,
-      budget:build.budget,
-      total:build.total,
-      score:build.score,
-      build:JSON.parse(JSON.stringify(build))
-    };
-
-    try{
-      const current=await loadSavedBuilds();
-      current.unshift(snapshot);
-      await puter.kv.set("spb:saved-builds",current.slice(0,20));
-      toast("Build saved to your account.");
-      renderMenu();
-    }catch(error){
-      console.error("Saved build write failed:",error);
-      toast("Could not save the build. Check account permissions.");
-    }finally{
-      saveBtn.disabled=false;
-    }
-  }
-
-  async function deleteBuild(id){
-    if(!user) return;
-    const current=await loadSavedBuilds();
-    const next=current.filter(item=>item.id!==id);
-    try{
-      await puter.kv.set("spb:saved-builds",next);
-      renderMenu();
-      toast("Saved build deleted.");
-    }catch(error){
-      console.error(error);
-      toast("Could not delete the saved build.");
-    }
-  }
-
-  function applySavedBuild(item){
-    const build=item?.build;
-    if(!build) return;
-
-    const api=builder();
-    if(!api.state || !api.generateBuild){
-      toast("Builder is not ready yet.");
-      return;
-    }
-
-    const byId=(type,id)=>(api.catalog?.[type]||[]).find(x=>x.id===id);
-    const workloadKey=Object.keys(api.catalog||{}).length
-      ? String(build.workload||"").toLowerCase()
-      : "";
-
-    const workloadMap={
-      gaming:"gaming",
-      creator:"creator",
-      productivity:"productivity",
-      "ai / ml":"ai"
-    };
-
-    const wk=workloadMap[workloadKey] || "gaming";
-    api.state.useCase=wk;
-    api.state.optimization=String(build.optimization||"balanced");
-    api.state.headroom=build.headroomPreference!==false;
-    api.state.manual={
-      cpuId:byId("cpu",build.cpu?.id)?.id||null,
-      gpuId:byId("gpu",build.gpu?.id)?.id||null,
-      ramId:byId("ram",build.ram?.id)?.id||null,
-      storageId:byId("storage",build.storage?.id)?.id||null
-    };
-
-    const setValue=(id,value)=>{
-      const el=get(id);
-      if(el && value!=null) el.value=String(value);
-    };
-
-    setValue("budget",build.budget);
-    setValue("budgetRange",build.budget);
-    setValue("resolution",build.resolution);
-    setValue("optimizationMode",api.state.optimization);
-    setValue("ramTarget",build.ram?.gb);
-    setValue("storageTarget",build.storage?.tb);
-
-    document.querySelectorAll(".choice").forEach(btn=>{
-      btn.classList.toggle("active",btn.dataset.use===wk);
-    });
-
-    api.generateBuild();
-    closeMenu();
-    get("builder")?.scrollIntoView({behavior:"smooth"});
-    toast("Saved build loaded.");
-  }
-
-  async function renderMenu(){
-    if(!menu) return;
-
-    if(!user){
-      menu.innerHTML=
-        '<div class="account-profile">'+
-          '<div>'+
-            '<strong>Smart PC Builder account</strong>'+
-            '<small>Sign in to save and manage your builds across visits.</small>'+
-          '</div>'+
-        '</div>'+
-        '<div class="account-actions">'+
-          '<button class="account-action primary" data-account-action="signin" type="button">Sign in with Puter</button>'+
-        '</div>'+
-        '<p class="account-login-note" style="margin-top:10px;">Your saved builds are stored in your own Puter app data rather than this website\'s public JavaScript.</p>';
-      return;
-    }
-
-    const builds=await loadSavedBuilds();
-    const image=avatarFor(user);
-
-    menu.innerHTML=
-      '<div class="account-profile">'+
-        (image?'<img alt="" src="'+escapeHtml(image)+'">':'<div class="account-avatar" aria-hidden="true"></div>')+
-        '<div><strong>'+escapeHtml(displayName(user))+'</strong><small>'+escapeHtml(displayEmail(user))+'</small></div>'+
-      '</div>'+
-      '<div class="account-actions">'+
-        '<button class="account-action" data-account-action="save" type="button">Save current build</button>'+
-        '<button class="account-action" data-account-action="refresh" type="button">Refresh saved builds</button>'+
-        '<button class="account-action" data-account-action="signout" type="button">Sign out</button>'+
-      '</div>'+
-      '<div style="margin-top:14px;"><span class="section-kicker" style="font-size:10px;">SAVED BUILDS · '+builds.length+'</span></div>'+
-      '<div class="saved-builds">'+
-        (builds.length
-          ? builds.map(item=>
-            '<article class="saved-build">'+
-              '<strong>'+escapeHtml(item.title||"Saved build")+'</strong>'+
-              '<small>'+escapeHtml(formatDate(item.createdAt))+' · '+escapeHtml("₹"+Number(item.total||0).toLocaleString("en-IN"))+' · '+escapeHtml(String(item.score||0))+'/100</small>'+
-              '<div class="saved-build-actions">'+
-                '<button type="button" data-load-id="'+escapeHtml(item.id)+'">Load</button>'+
-                '<button type="button" data-delete-id="'+escapeHtml(item.id)+'">Delete</button>'+
-              '</div>'+
-            '</article>'
-          ).join("")
-          : '<div class="account-empty">No saved builds yet. Generate a build and use “Save build”.</div>')+
-      '</div>';
-
-    menu.querySelectorAll("[data-load-id]").forEach(button=>{
-      button.addEventListener("click",async()=>{
-        const items=await loadSavedBuilds();
-        const item=items.find(x=>x.id===button.dataset.loadId);
-        if(item) applySavedBuild(item);
-      });
-    });
-
-    menu.querySelectorAll("[data-delete-id]").forEach(button=>{
-      button.addEventListener("click",()=>deleteBuild(button.dataset.deleteId));
-    });
-  }
-
   async function refreshAuth(){
-    if(!puterReady()) return;
+    const supa = getClient();
+    if (!supa){
+      user = null;
+      renderAccountButton();
+      if (accountMenu && !accountMenu.hidden) await renderMenu();
+      return;
+    }
 
     try{
-      const signedIn=puter.auth.isSignedIn();
-      if(!signedIn){
-        user=null;
-      }else{
-        user=await puter.auth.getUser();
-      }
+      const { data, error } = await supa.auth.getSession();
+      if (error) throw error;
+      user = data?.session?.user || null;
     }catch(error){
-      console.error("Authentication status check failed:",error);
-      user=null;
+      console.error("Authentication check failed:",error);
+      user = null;
     }
 
     renderAccountButton();
-    if(menu && !menu.hidden) renderMenu();
-  }
-
-  async function signIn(){
-    if(!puterReady()){
-      toast("Account service is still loading. Try again.");
-      return;
-    }
-    try{
-      await puter.auth.signIn();
-      await refreshAuth();
-      if(user){
-        toast("Signed in as "+displayName(user)+".");
-        openMenu();
-      }
-    }catch(error){
-      console.error("Sign-in failed:",error);
-      const code=String(error?.error||"");
-      toast(code==="popup_blocked" ? "Allow the sign-in popup and try again." : "Sign-in was cancelled or failed.");
-    }
+    if (accountMenu && !accountMenu.hidden) await renderMenu();
   }
 
   async function signOut(){
-    if(!puterReady()) return;
-    try{
-      await puter.auth.signOut();
-    }catch(error){
-      console.error("Sign-out failed:",error);
-    }
-    user=null;
+    const supa = getClient();
+    if (!supa) return;
+    const { error } = await supa.auth.signOut();
+    if (error) console.error("Sign-out failed:",error);
+    user = null;
     closeMenu();
     renderAccountButton();
-    toast("Signed out.");
+    toast(error ? "Signed out locally." : "Signed out.");
   }
 
-  accountBtn.addEventListener("click",()=>{
-    if(!puterReady()){
-      toast("Account service is still loading. Try again.");
+  accountBtn.addEventListener("click",() => {
+    if (!authConfigReady()){
+      openAuthDialog("signin");
+      setAuthMessage("Add your Supabase project URL and public anon/publishable key to supabase-config.js.","error");
       return;
     }
-    if(menu && !menu.hidden){
-      closeMenu();
+    if (user){
+      if (accountMenu && !accountMenu.hidden) closeMenu();
+      else openMenu();
     }else{
-      openMenu();
+      openAuthDialog("signin");
     }
   });
 
-  if(saveBtn) saveBtn.addEventListener("click",saveBuild);
+  if (saveBtn) saveBtn.addEventListener("click",saveBuild);
 
-  document.addEventListener("click",event=>{
-    if(!menu || menu.hidden) return;
-    if(menu.contains(event.target) || accountBtn.contains(event.target)) return;
+  document.addEventListener("click",event => {
+    const action = event.target.closest?.("[data-account-action]");
+    if (!action) return;
+    const type = action.dataset.accountAction;
+    if (type === "signin") openAuthDialog("signin");
+    if (type === "signup") openAuthDialog("signup");
+    if (type === "save") saveBuild();
+    if (type === "signout") signOut();
+  });
+
+  document.addEventListener("click",event => {
+    if (!accountMenu || accountMenu.hidden) return;
+    if (accountMenu.contains(event.target) || accountBtn.contains(event.target)) return;
     closeMenu();
   });
 
   window.addEventListener("resize",positionMenu);
   window.addEventListener("scroll",positionMenu,true);
 
-  document.addEventListener("click",event=>{
-    const action=event.target.closest?.("[data-account-action]");
-    if(!action) return;
-    const type=action.dataset.accountAction;
-    if(type==="signin") signIn();
-    if(type==="save") saveBuild();
-    if(type==="refresh") renderMenu();
-    if(type==="signout") signOut();
-  });
-
-  window.addEventListener("spb-build-updated",()=>{
-    if(saveBtn) saveBtn.disabled=!user;
-  });
-
-  async function boot(){
-    let attempts=0;
-    while(!puterReady() && attempts<80){
-      await new Promise(resolve=>setTimeout(resolve,100));
-      attempts++;
-    }
-
-    if(!puterReady()){
-      accountBtn.textContent="Account unavailable";
-      if(saveBtn) saveBtn.disabled=true;
-      return;
-    }
-
-    await refreshAuth();
-    if(saveBtn) saveBtn.disabled=!user;
+  const supa = getClient();
+  if (supa){
+    supa.auth.onAuthStateChange((_event,session) => {
+      user = session?.user || null;
+      renderAccountButton();
+      if (accountMenu && !accountMenu.hidden) renderMenu();
+    });
+    refreshAuth().catch(error => console.error("Account boot failed:",error));
+  }else{
+    renderAccountButton();
   }
 
-  boot().catch(error=>console.error("Account system boot failed:",error));
-
-  window.__SPB_ACCOUNT__={
-    refresh:refreshAuth,
-    signIn,
+  window.__SPB_ACCOUNT__ = {
+    refresh: refreshAuth,
+    signIn: () => openAuthDialog("signin"),
+    signUp: () => openAuthDialog("signup"),
     signOut,
     saveBuild,
-    getUser:()=>user
+    getUser: () => user,
+    configured: authConfigReady
   };
 })();

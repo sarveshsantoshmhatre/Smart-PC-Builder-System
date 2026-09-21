@@ -168,7 +168,21 @@ function generateBuild(){
       best={cpu:cpu,gpu:gpu,ram:support.ram,storage:support.storage,motherboard:support.motherboard,psu:support.psu,cooler:support.cooler,case:support.case,total:cpu.price+gpu.price+support.total,modelScore:score};
     }
   });});
-  if(!best||!Number.isFinite(best.modelScore)) best=fallbackBuild(budget);
+  if(!best||!Number.isFinite(best.modelScore)){
+    var hasManual=state.manual && Object.values(state.manual).some(Boolean);
+    if(hasManual){
+      var forcedCpu=(state.manual.cpuId&&CATALOG.cpu.find(function(x){return x.id===state.manual.cpuId;}))||cpuPool[0]||CATALOG.cpu[0];
+      var forcedGpu=(state.manual.gpuId&&CATALOG.gpu.find(function(x){return x.id===state.manual.gpuId;}))||gpuPool[0]||CATALOG.gpu[0];
+      var forcedSupport=supportCost(forcedCpu,forcedGpu);
+      best={cpu:forcedCpu,gpu:forcedGpu,ram:forcedSupport.ram,storage:forcedSupport.storage,motherboard:forcedSupport.motherboard,psu:forcedSupport.psu,cooler:forcedSupport.cooler,case:forcedSupport.case,total:forcedCpu.price+forcedGpu.price+forcedSupport.total,modelScore:-Infinity};
+    } else {
+      best=fallbackBuild(budget);
+      if(best && !best.ram){
+        var fallbackSupport=supportCost(best.cpu,best.gpu);
+        best=Object.assign(best,fallbackSupport);
+      }
+    }
+  }
 
   var build=Object.assign({},best,{
     budget:budget,

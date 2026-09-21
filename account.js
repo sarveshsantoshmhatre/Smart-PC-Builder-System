@@ -20,16 +20,25 @@
     return window.__SMART_PC_BUILDER__ || {};
   }
 
-  function authConfigReady(){
+  function authConfigState(){
     const cfg = window.SMART_PC_AUTH || {};
-    return Boolean(
-      window.supabase &&
-      typeof window.supabase.createClient === "function" &&
-      /^https:\/\/[^\\s]+\.supabase\.co$/.test(String(cfg.url || "")) &&
-      String(cfg.anonKey || "").length > 20 &&
-      !String(cfg.url || "").includes("YOUR-PROJECT-REF") &&
-      !String(cfg.anonKey || "").includes("YOUR-SUPABASE-ANON-KEY")
-    );
+    if (!window.supabase || typeof window.supabase.createClient !== "function"){
+      return { ready:false, message:"Supabase client library did not load. Check your internet connection or CDN access." };
+    }
+    if (!cfg.url || String(cfg.url).includes("YOUR-PROJECT-REF")){
+      return { ready:false, message:"Supabase project URL is missing from supabase-config.js." };
+    }
+    if (!cfg.anonKey || String(cfg.anonKey).includes("YOUR-SUPABASE-ANON-KEY")){
+      return { ready:false, message:"Supabase publishable key is missing from supabase-config.js." };
+    }
+    if (!/^https:\/\/[^\\s]+\.supabase\.co$/.test(String(cfg.url))){
+      return { ready:false, message:"Supabase project URL in supabase-config.js is invalid." };
+    }
+    return { ready:true, message:"" };
+  }
+
+  function authConfigReady(){
+    return authConfigState().ready;
   }
 
   function getClient(){
@@ -179,7 +188,7 @@
   async function signInWithProvider(provider){
     const supa = getClient();
     if (!supa){
-      setAuthMessage("Account login is not configured yet. Add your Supabase project settings to supabase-config.js.","error");
+      setAuthMessage(authConfigState().message || "Account login is not configured yet.","error");
       return;
     }
 
@@ -205,7 +214,7 @@
   async function submitEmailAuth(){
     const supa = getClient();
     if (!supa){
-      setAuthMessage("Account login is not configured yet. Add your Supabase project settings to supabase-config.js.","error");
+      setAuthMessage(authConfigState().message || "Account login is not configured yet.","error");
       return;
     }
 
@@ -248,7 +257,7 @@
   async function sendPasswordReset(){
     const supa = getClient();
     if (!supa){
-      setAuthMessage("Account login is not configured yet.","error");
+      setAuthMessage(authConfigState().message || "Account login is not configured yet.","error");
       return;
     }
 

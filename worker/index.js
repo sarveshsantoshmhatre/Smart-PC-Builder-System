@@ -113,11 +113,243 @@ ${question}`
   ];
 }
 
-router.get("/health", async () => {
+
+
+const MARKET_CACHE_TTL = 6 * 60 * 60 * 1000;
+const marketCache = new Map();
+
+async function marketApiKey() {
+  try {
+    const key = await me.puter.kv.get("DATAYUGE_API_KEY");
+    return String(key || "").trim();
+  } catch (_) {
+    return "";
+  }
+}
+
+async function dataYugeSearch(apiKey, product) {
+  const url = new URL("https://price-api.datayuge.com/api/v1/compare/search");
+  url.searchParams.set("api_key", apiKey);
+  url.searchParams.set("product", product.slice(0, 120));
+  url.searchParams.set("page", "1");
+  const response = await fetch(url, { headers: { "Accept": "application/json" } });
+  if (!response.ok) throw new Error("PriceYuge search HTTP " + response.status);
+  return response.json();
+}
+
+async function dataYugeDetail(apiKey, id) {
+  const url = new URL("https://price-api.datayuge.com/api/v1/compare/detail");
+  url.searchParams.set("api_key", apiKey);
+  url.searchParams.set("id", id);
+  const response = await fetch(url, { headers: { "Accept": "application/json" } });
+  if (!response.ok) throw new Error("PriceYuge detail HTTP " + response.status);
+  return response.json();
+}
+
+function normaliseTitle(text) {
+  return String(text || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function matchScore(query, title) {
+  const q = new Set(normaliseTitle(query).split(/\\s+/).filter(Boolean));
+  const t = new Set(normaliseTitle(title).split(/\\s+/).filter(Boolean));
+  if (!q.size || !t.size) return 0;
+  let hits = 0;
+  q.forEach(token => { if (t.has(token)) hits += 1; });
+  return hits / q.size;
+}
+
+function extractStoreOffers(detailPayload) {
+  const data = detailPayload?.data || {};
+  const stores = Array.isArray(data.stores) ? data.stores : [];
+  const offers = [];
+  for (const storeObject of stores) {
+    if (!storeObject || typeof storeObject !== "object") continue;
+    for (const [key, value] of Object.entries(storeObject)) {
+      if (!value || Array.isArray(value)) continue;
+      const price = Number(String(value.product_price || "").replace(/,/g, ""));
+      if (!Number.isFinite(price) || price <= 0) continue;
+      offers.push({
+        retailer: value.product_store || key,
+        price,
+        stock: Boolean(data.is_available),
+        url: value.product_store_url || "",
+        delivery: value.product_delivery || "",
+        offer: value.product_offer || ""
+      });
+    }
+  }
+  return offers.sort((a, b) => a.price - b.price);
+}
+
+async function liveMarketForPart(part, apiKey) {
+  const cacheKey = normaliseTitle(part.query);
+  const cached = marketCache.get(cacheKey);
+  if (cached && Date.now() - cached.fetchedAt < MARKET_CACHE_TTL) return cached.value;
+
+  const searchPayload = await dataYugeSearch(apiKey, part.query);
+  const results = Array.isArray(searchPayload?.data) ? searchPayload.data : [];
+  const ranked = results
+    .filter(item => item?.product_id && item?.product_title)
+    .map(item => ({
+      item,
+      score: matchScore(part.query, item.product_title),
+      lowest: Number(item.product_lowest_price || 0)
+    }))
+    .sort((a, b) => (b.score - a.score) || (a.lowest - b.lowest))
+    .slice(0, 3);
+
+  let offers = [];
+  let matchedTitle = "";
+  let productId = "";
+  if (ranked[0]?.item) {
+    matchedTitle = ranked[0].item.product_title;
+    productId = ranked[0].item.product_id;
+    try {
+      const detail = await dataYugeDetail(apiKey, productId);
+      offers = extractStoreOffers(detail);
+    } catch (_) {
+      offers = [];
+    }
+  }
+
+  if (!offers.length && ranked.length) {
+    const fallback = ranked[0].item;
+    const price = Number(fallback.product_lowest_price || 0);
+    if (price > 0) {
+      offers = [{
+        retailer: "PriceYuge market feed",
+        price,
+        stock: true,
+        url: fallback.product_link || "",
+        delivery: "",
+        offer: ""
+      }];
+    }
+    matchedTitle = fallback.product_title;
+    productId = fallback.product_id;
+  }
+
+  const value = {
+    component: part.component,
+    query: part.query,
+    matchedTitle,
+    productId,
+    offers: offers.slice(0, 8),
+    fetchedAt: new Date().toISOString()
+  };
+  marketCache.set(cacheKey, { fetchedAt: Date.now(), value });
+  return value;
+}
+
+router.post("/market/build", async ({ request }) => {
+  try {
+    enforceRateLimit(request);
+    const apiKey = await marketApiKey();
+    if (!apiKey) {
+      return json({
+        enabled: false,
+        error: "Market feed is not configured.",
+        setup: "Store your DataYuge/PriceYuge API key in the worker KV as DATAYUGE_API_KEY."
+      }, 503);
+    }
+
+    const body = await request.json();
+    const parts = Array.isArray(body?.parts) ? body.parts.slice(0, 8) : [];
+    if (!parts.length) return json({ error: "At least one component query is required." }, 400);
+
+    const results = await Promise.all(parts.map(part => liveMarketForPart({
+      component: String(part?.component || "component").slice(0, 40),
+      query: String(part?.query || "").trim().slice(0, 120)
+    }, apiKey)));
+
+    return json({
+      enabled: true,
+      provider: "PriceYuge / DataYuge",
+      freshness: "latest available feed",
+      fetchedAt: new Date().toISOString(),
+      results
+    });
+  } catch (error) {
+    if (error instanceof Response) return error;
+    return json({ error: error?.message || "Market feed failed." }, 502);
+  }
+});
+
+router.post("/optimize", async ({ request }) => {
+  try {
+    enforceRateLimit(request);
+    const body = await request.json();
+    const goal = String(body?.goal || "balanced").slice(0, 40);
+    const context = String(body?.context || "").slice(0, MAX_CONTEXT_CHARS);
+
+    const model = await chooseFreeOpenModel();
+    const messages = [
+      {
+        role: "system",
+        content: `You are the Smart PC Builder optimization engine. The local deterministic builder is authoritative for compatibility. Return ONLY valid JSON with this exact structure:
+{"summary":"short explanation","changes":[{"component":"cpu|gpu|memory|storage","id":"local catalog id when clearly supported","from":"current value","to":"proposed value","reason":"short reason"}]}
+Rules:
+- Never invent a product id. Use an id only when it is explicitly present in the supplied build/catalog context.
+- Respect the stated budget.
+- Propose at most 4 changes.
+- Prefer changes that materially improve the selected goal.
+- Keep changes compatible with the supplied platform.
+- If no safe changes are available, return an empty changes array.
+- Do not include markdown fences or extra text.`
+      },
+      {
+        role: "user",
+        content: `GOAL: ${goal}
+
+BUILDER CONTEXT:
+${context}
+
+TASK:
+Suggest changes that improve the build for the selected goal while staying within budget.`
+      }
+    ];
+
+    const result = await me.puter.ai.chat(messages, {
+      model,
+      stream: false,
+      max_tokens: 360,
+      temperature: 0.15,
+      normalize: true
+    });
+
+    const raw = String(result?.message?.content || result?.content || "").trim();
+    const cleaned = raw.replace(/^\```json\\s*/i, "").replace(/\```\\s*$/i, "").trim();
+    let parsed;
+    try {
+      parsed = JSON.parse(cleaned);
+    } catch (_) {
+      return json({ error: "AI optimizer returned invalid structured output." }, 502);
+    }
+
+    const changes = Array.isArray(parsed.changes) ? parsed.changes.slice(0, 4).map(change => ({
+      component: String(change?.component || ""),
+      id: String(change?.id || ""),
+      from: String(change?.from || ""),
+      to: String(change?.to || ""),
+      reason: String(change?.reason || "")
+    })) : [];
+
+    return json({
+      summary: String(parsed.summary || "No optimization summary returned."),
+      changes
+    });
+  } catch (error) {
+    if (error instanceof Response) return error;
+    return json({ error: error?.message || "AI optimizer failed." }, 500);
+  }
+});
+\nrouter.get("/health", async () => {
   return {
     ok: true,
     service: "Smart PC Builder AI",
-    inference: "cloud"
+    inference: "cloud",
+    marketFeed: Boolean(await marketApiKey())
   };
 });
 

@@ -113,3 +113,200 @@ select{font-size:11px}
 .ai-note{font-size:9px}
 .footer-links,.footer-links a{font-size:10px}
 .info-dot:after{font-size:10px}
+
+
+/* Production polish overrides */
+:root{
+  --content-max:1480px;
+  --surface-elevated:#121b2a;
+  --text-bright:#f7f9fc;
+  --muted-readable:#a8b3c4;
+}
+html{scroll-padding-top:104px}
+body{font-size:15px;line-height:1.5}
+button,a,input,select,textarea{min-height:44px}
+.topbar{min-height:82px;gap:28px;padding:0 2px}
+.brand-mark{width:44px;height:44px;font-size:11px}
+.brand-copy strong{font-size:16px}
+.brand-copy small{font-size:12px}
+.main-nav{gap:8px}
+.main-nav a{font-size:13px;padding:10px 12px;border-radius:10px;color:#aab5c7}
+.main-nav a:hover,.main-nav a:focus-visible{background:rgba(255,255,255,.04);color:#f1f4f9;outline:none}
+.ghost-btn,.primary-btn,.icon-btn{font-size:13px;min-height:44px;padding:11px 15px}
+.primary-btn.compact{font-size:12px;min-height:42px}
+.hero{gap:44px;padding:86px 0 64px;grid-template-columns:minmax(0,1.1fr) minmax(360px,440px)}
+.eyebrow,.section-kicker,.metric-label{font-size:11px;letter-spacing:.13em}
+.hero h1{font-size:clamp(52px,6.8vw,88px);line-height:.98;margin:14px 0 20px}
+.hero p{font-size:17px;line-height:1.75;color:#b0bac9;max-width:780px}
+.hero-trust{gap:10px;margin-top:26px}
+.hero-trust span{font-size:11px;padding:9px 11px;color:#a1acbe}
+.hero-dashboard{padding:26px;border-radius:26px}
+.hero-score strong{font-size:82px}
+.hero-score small{font-size:15px}
+.mini-metrics{gap:12px;margin-top:18px}
+.mini-metrics div{padding:14px}
+.mini-metrics span{font-size:11px;color:#8995a8}
+.mini-metrics strong{font-size:18px}
+.workflow,.studio-section,.analysis-section,.alternatives-section,.ai-assistant{scroll-margin-top:104px}
+.workflow{padding-top:0}
+.workflow-head,.section-header{margin-bottom:22px}
+.workflow-head h2,.section-header h2{font-size:32px}
+.workflow-note,.section-header p{font-size:13px;color:#8f9bad}
+.builder-layout{grid-template-columns:390px minmax(0,1fr);gap:22px}
+.control-panel,.result-panel{padding:28px}
+.panel{border-radius:24px}
+.panel-title{margin-bottom:22px}
+.panel-title h3{font-size:21px}
+.step-tag{width:32px;height:32px;font-size:12px}
+.control-label-row label,.field-block label,.field-label{font-size:13px}
+.control-label-row strong{font-size:19px}
+.budget-input input{font-size:22px;min-height:50px}
+.range-hints,.preset-row button{font-size:11px}
+.preset-row button{min-height:40px;padding:8px 10px}
+.choice{min-height:78px;padding:12px;gap:11px}
+.choice-icon{width:34px;height:34px;font-size:10px}
+.choice b{font-size:13px}
+.choice small{font-size:11px}
+.field-grid{gap:12px}
+select{font-size:13px;min-height:46px}
+.toggle-row{padding:14px;margin:4px 0 18px}
+.toggle-row strong{font-size:13px}
+.toggle-row small{font-size:11px;line-height:1.45}
+.disclaimer{font-size:10px;line-height:1.6}
+.result-title h3{font-size:23px}
+.result-title p{font-size:13px;line-height:1.5}
+.status-badge{font-size:11px;min-height:38px}
+.summary-grid{gap:12px}
+.summary-card{padding:17px}
+.summary-card strong{font-size:28px}
+.summary-card small,.budget-rail-head span,.budget-rail-head strong,.rail-meta{font-size:11px}
+.budget-rail{padding:16px}
+.rail-track{height:9px}
+.components-head{margin-top:26px;margin-bottom:13px}
+.components-head h4,.validation-head h4,.decision-card h4,.card-head h3{font-size:17px}
+.ghost-btn.tiny{font-size:11px;min-height:40px}
+.components{gap:12px}
+.component{padding:15px}
+.component-type{font-size:10px}
+.component-price{font-size:13px}
+.component h4{font-size:14px;line-height:1.35}
+.component-meta{gap:6px}
+.component-meta span{font-size:10px;padding:5px 7px}
+.decision-grid{gap:12px;margin-top:12px}
+.decision-card{padding:15px}
+.decision-card p{font-size:11px;line-height:1.6;color:#a2acbb}
+.validation-card{margin-top:12px;padding:16px}
+.validation-head>span{font-size:10px}
+.validation-row{padding:10px;gap:10px}
+.validation-row p{font-size:11px;line-height:1.55}
+.validation-icon{width:20px;height:20px;font-size:11px}
+.studio-section,.analysis-section,.alternatives-section,.ai-assistant{margin-top:72px}
+.viewer-panel{padding:14px}
+.viewer-toolbar{padding:2px 2px 12px}
+.viewer-tool,.viewer-controls .icon-btn{font-size:10px;min-height:40px}
+.viewer-stage{height:clamp(500px,55vw,700px);min-height:500px;border-radius:20px}
+.viewer-footer{padding-top:12px}
+.focus-control label,.focus-control select,.viewer-legend{font-size:10px}
+.focus-control select{min-height:44px}
+.studio-info{padding:22px}
+.snapshot-row span{font-size:10px}
+.snapshot-row strong{font-size:11px}
+.studio-tip strong{font-size:11px}
+.studio-tip p{font-size:10px}
+.analysis-grid{gap:16px}
+.chart-card,.workload-card,.upgrade-card,.benchmark-card{padding:22px}
+.card-head>span{font-size:11px}
+.allocation-list{gap:10px}
+.allocation-row{gap:11px}
+.allocation-row>span,.allocation-row strong{font-size:11px}
+.fit-items,.upgrade-row,.balance-row{font-size:11px}
+.fit-item span,.fit-item strong{font-size:11px}
+.upgrade-row strong,.balance-row strong{font-size:11px}
+.upgrade-row p,.balance-row p{font-size:10px;line-height:1.5}
+.balance-chip{font-size:10px}
+.alternatives-section{padding:24px}
+.alternative-grid{gap:14px}
+.alt-card{padding:18px}
+.alt-top h3{font-size:17px}
+.alt-price{font-size:14px}
+.alt-desc,.alt-list>span,.alt-list strong{font-size:11px}
+.alt-actions .ghost-btn{min-height:42px}
+.ai-assistant{padding:24px}
+.ai-live-badge{font-size:10px;min-height:38px}
+.chat-log{max-height:360px;gap:11px;padding:3px}
+.chat-message{padding:14px 16px}
+.chat-role{font-size:9px}
+.chat-message p{font-size:13px;line-height:1.7}
+.ai-form{grid-template-columns:minmax(0,1fr) 190px;gap:10px}
+.ai-form textarea{font-size:13px;min-height:72px;padding:13px}
+.ai-note{font-size:10px}
+footer{padding:52px 0 68px;font-size:11px;line-height:1.5}
+footer strong{font-size:12px}
+.footer-links{gap:18px}
+.footer-links a{font-size:11px}
+.toast{font-size:12px;padding:12px 14px;max-width:420px}
+.compare-dialog{max-width:min(1180px,94vw);width:min(1180px,94vw)}
+.dialog-card{padding:24px}
+.dialog-head h3{font-size:22px}
+.dialog-head p{font-size:12px}
+.compare-card h4{font-size:16px}
+.compare-price{font-size:22px}
+.compare-card p,.compare-parts span,.compare-parts strong{font-size:11px}
+.info-dot{width:18px;height:18px;min-height:18px;font-size:9px}
+.info-dot:after{font-size:11px;line-height:1.55;width:min(310px,calc(100vw - 30px));padding:13px 14px}
+
+@media(max-width:1120px){
+  .topbar{padding:0}
+  .main-nav{display:none}
+  .hero{grid-template-columns:1fr;padding-top:70px}
+  .hero-dashboard{max-width:600px}
+  .builder-layout{grid-template-columns:1fr}
+  .control-panel{max-width:none}
+  .studio-grid{grid-template-columns:1fr}
+  .studio-info{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .studio-info .panel-title{margin-bottom:0}
+}
+@media(max-width:860px){
+  .app-shell{width:min(100% - 28px,1480px)}
+  .topbar{min-height:72px}
+  .top-actions .ghost-btn{display:none}
+  .hero{padding:54px 0 46px}
+  .hero h1{font-size:clamp(44px,8vw,62px)}
+  .hero p{font-size:15px}
+  .summary-grid,.decision-grid,.analysis-grid{grid-template-columns:1fr}
+  .components{grid-template-columns:1fr}
+  .alternative-grid,.compare-grid{grid-template-columns:1fr}
+  .allocation-row{grid-template-columns:140px 1fr 64px}
+  .viewer-stage{min-height:460px;height:520px}
+  .studio-info{display:block}
+  .ai-form{grid-template-columns:1fr}
+}
+@media(max-width:560px){
+  .app-shell{width:calc(100% - 20px)}
+  .brand-copy strong{font-size:14px}
+  .topbar{min-height:66px}
+  .hero{padding:42px 0 38px;gap:26px}
+  .hero h1{font-size:40px;letter-spacing:-.05em}
+  .hero p{font-size:14px;line-height:1.7}
+  .hero-actions{flex-direction:column;gap:10px}
+  .hero-actions .primary-btn,.hero-actions .ghost-btn{width:100%;justify-content:center}
+  .field-grid{grid-template-columns:1fr}
+  .choice-grid{grid-template-columns:1fr 1fr}
+  .mini-metrics{grid-template-columns:1fr}
+  .result-actions{flex-direction:row;align-items:center;flex-wrap:wrap}
+  .status-badge{font-size:10px}
+  .viewer-controls{width:100%}
+  .viewer-controls .icon-btn{flex:1}
+  .viewer-stage{height:430px;min-height:430px}
+  .focus-control{width:100%;align-items:stretch;flex-direction:column}
+  .focus-control select{width:100%}
+  .allocation-row{grid-template-columns:1fr 64px;grid-template-areas:"label value" "bar bar";gap:6px}
+  .allocation-row>span{grid-area:label}
+  .allocation-row strong{grid-area:value}
+  .allocation-bar{grid-area:bar}
+  .section-header,.workflow-head{align-items:flex-start;flex-direction:column}
+  .section-header h2,.workflow-head h2{font-size:27px}
+  .alternatives-section,.ai-assistant{padding:18px}
+  footer{flex-direction:column;align-items:flex-start}
+  .footer-links{flex-wrap:wrap}
+}

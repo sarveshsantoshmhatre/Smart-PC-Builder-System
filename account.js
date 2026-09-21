@@ -11,6 +11,7 @@
   let accountMenu = null;
   let authDialog = null;
   let authMode = "signin";
+  const ACCESS_KEY = "spb_access_mode";
 
   function toast(message){
     if (typeof window.showToast === "function") window.showToast(message);
@@ -119,7 +120,7 @@
           '<button class="auth-link" id="forgotPasswordBtn" type="button">Forgot password?</button>' +
         '</form>' +
         '<p class="auth-message" id="authMessage" role="status"></p>' +
-        '<button class="auth-guest" type="button" data-auth-action="close">Continue as guest</button>' +
+        '<button class="auth-guest" type="button" data-auth-action="guest">Continue as guest</button>' +
       '</div>';
 
     document.body.appendChild(authDialog);
@@ -146,6 +147,7 @@
     authDialog.addEventListener("click", event => {
       const action = event.target.closest?.("[data-auth-action]");
       if (action?.dataset.authAction === "close") closeAuthDialog();
+      if (action?.dataset.authAction === "guest") continueAsGuest();
     });
 
     authDialog.addEventListener("cancel", closeAuthDialog);
@@ -173,6 +175,25 @@
     forgot.hidden = authMode !== "signin";
     password.autocomplete = authMode === "signin" ? "current-password" : "new-password";
     setAuthMessage("");
+  }
+
+  function continueAsGuest(){
+    try { localStorage.setItem(ACCESS_KEY, "guest"); } catch (_error) {}
+    user = null;
+    renderAccountButton();
+    closeAuthDialog();
+    updateProtectedFeatures();
+    toast("Continuing as guest. Sign in anytime to unlock account features.");
+  }
+
+  function updateProtectedFeatures(){
+    const locked = !user;
+    const save = get("saveBuildBtn");
+    if (save){
+      save.classList.toggle("feature-locked", locked);
+      save.title = locked ? "Sign in to unlock saved builds" : "Save build to your account";
+      save.setAttribute("aria-label", save.title);
+    }
   }
 
   function openAuthDialog(mode){
@@ -235,6 +256,7 @@
         const { data, error } = await supa.auth.signInWithPassword({ email, password });
         if (error) throw error;
         user = data?.user || null;
+        try { localStorage.setItem(ACCESS_KEY, "authenticated"); } catch (_error) {}
         renderAccountButton();
         closeAuthDialog();
         toast("Signed in successfully.");
@@ -248,6 +270,7 @@
 
         if (data?.session){
           user = data?.user || data.session.user || null;
+          try { localStorage.setItem(ACCESS_KEY, "authenticated"); } catch (_error) {}
           renderAccountButton();
           closeAuthDialog();
           toast("Account created.");
@@ -322,12 +345,16 @@
     accountBtn.textContent = "";
 
     if (!user){
-      accountBtn.textContent = "Sign in";
-      accountBtn.title = "Sign in or create an account";
+      let guest = false;
+      try { guest = localStorage.getItem(ACCESS_KEY) === "guest"; } catch (_error) {}
+      accountBtn.textContent = guest ? "Guest" : "Sign in";
+      accountBtn.title = guest ? "Guest mode — sign in to unlock account features" : "Sign in or create an account";
+      updateProtectedFeatures();
       return;
     }
 
     accountBtn.textContent = "Account";
+    updateProtectedFeatures();
 
     const avatar = avatarUrl(user);
     if (avatar){
@@ -614,12 +641,22 @@
   if (supa){
     supa.auth.onAuthStateChange((_event,session) => {
       user = session?.user || null;
+      if (user) { try { localStorage.setItem(ACCESS_KEY, "authenticated"); } catch (_error) {} }
       renderAccountButton();
+      updateProtectedFeatures();
       if (accountMenu && !accountMenu.hidden) renderMenu();
     });
-    refreshAuth().catch(error => console.error("Account boot failed:",error));
+    refreshAuth().then(() => {
+      let mode = "";
+      try { mode = localStorage.getItem(ACCESS_KEY) || ""; } catch (_error) {}
+      if (!user && mode !== "guest") openAuthDialog("signin");
+    }).catch(error => console.error("Account boot failed:",error));
   }else{
     renderAccountButton();
+    updateProtectedFeatures();
+    let mode = "";
+    try { mode = localStorage.getItem(ACCESS_KEY) || ""; } catch (_error) {}
+    if (mode !== "guest") openAuthDialog("signin");
   }
 
   window.__SPB_ACCOUNT__ = {

@@ -1004,3 +1004,27 @@ footer{font-size:11px}
 .feature-locked:hover{
   opacity:.82;
 }
+
+[data-protected-feature].feature-locked{
+  position:relative;
+  opacity:.58;
+  cursor:pointer;
+}
+[data-protected-feature].feature-locked::after{
+  content:"SIGN IN";
+  position:absolute;
+  top:-8px;
+  right:-8px;
+  padding:3px 6px;
+  border:1px solid #4b5870;
+  border-radius:999px;
+  color:#d5dce7;
+  background:#111b2a;
+  font:700 8px/1 "Space Grotesk",sans-serif;
+  letter-spacing:.06em;
+  pointer-events:none;
+}
+#aiQuestion.feature-locked{
+  border-color:#465673;
+  box-shadow:inset 0 0 0 1px rgba(143,108,255,.08);
+}

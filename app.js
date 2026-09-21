@@ -395,22 +395,98 @@ function reset(){
   generateBuild();showToast("Builder reset.");
 }
 
-$("budget").addEventListener("input",function(){var value=budgetValue();$("budgetRange").value=value;$("budgetFormatted").textContent=money(value);});
-$("budget").addEventListener("change",generateBuild);
-$("budgetRange").addEventListener("input",function(){$("budget").value=$("budgetRange").value;generateBuild();});
-document.querySelectorAll(".preset-row button").forEach(function(btn){btn.addEventListener("click",function(){$("budget").value=btn.dataset.budget;$("budgetRange").value=btn.dataset.budget;generateBuild();});});
-document.querySelectorAll(".choice").forEach(function(btn){btn.addEventListener("click",function(){document.querySelectorAll(".choice").forEach(function(x){x.classList.remove("active");});btn.classList.add("active");state.useCase=btn.dataset.use;generateBuild();});});
-["resolution","cpuPreference","gpuPreference","ramTarget","storageTarget"].forEach(function(id){$(id).addEventListener("change",generateBuild);});
-$("optimizationMode").addEventListener("change",function(){state.optimization=$("optimizationMode").value;generateBuild();});
-$("headroomToggle").addEventListener("change",function(){state.headroom=$("headroomToggle").checked;generateBuild();});
-$("buildBtn").addEventListener("click",generateBuild);$("resetBtn").addEventListener("click",reset);$("copyBtn").addEventListener("click",copyBuild);$("shareBtn").addEventListener("click",shareBuild);$("printBtn").addEventListener("click",function(){window.print();});$("exportJsonBtn").addEventListener("click",exportJson);
-$("randomBuildBtn").addEventListener("click",function(){
-  var budgets=[60000,80000,100000,120000,150000,180000,220000];$("budget").value=budgets[Math.floor(Math.random()*budgets.length)];$("budgetRange").value=$("budget").value;
-  var uses=Object.keys(WORKLOADS);state.useCase=uses[Math.floor(Math.random()*uses.length)];document.querySelectorAll(".choice").forEach(function(x){x.classList.toggle("active",x.dataset.use===state.useCase);});generateBuild();document.getElementById("builder").scrollIntoView({behavior:"smooth"});
+function safeAction(label, action){
+  try {
+    action();
+  } catch(error) {
+    console.error("Smart PC Builder action failed:", label, error);
+    showToast(label + " failed. Check the browser console for details.");
+  }
+}
+function bindClick(id,label,action){
+  var el=$(id);
+  if(!el) return;
+  el.addEventListener("click",function(){safeAction(label,action);});
+}
+
+$("budget").addEventListener("input",function(){
+  var value=budgetValue();
+  $("budgetRange").value=value;
+  $("budgetFormatted").textContent=money(value);
 });
-$("alternativesBtn").addEventListener("click",function(){document.getElementById("alternatives").scrollIntoView({behavior:"smooth"});});
-$("openAlternativesBtn").addEventListener("click",function(){
-  var dialog=$("compareDialog"),builds=[
+$("budget").addEventListener("change",function(){safeAction("Budget update",generateBuild);});
+$("budgetRange").addEventListener("input",function(){
+  $("budget").value=$("budgetRange").value;
+  safeAction("Budget slider update",generateBuild);
+});
+document.querySelectorAll(".preset-row button").forEach(function(btn){
+  btn.addEventListener("click",function(){
+    safeAction("Budget preset",function(){
+      $("budget").value=btn.dataset.budget;
+      $("budgetRange").value=btn.dataset.budget;
+      generateBuild();
+      showToast("Budget set to " + money(btn.dataset.budget) + ".");
+    });
+  });
+});
+document.querySelectorAll(".choice").forEach(function(btn){
+  btn.addEventListener("click",function(){
+    safeAction("Workload selection",function(){
+      document.querySelectorAll(".choice").forEach(function(x){x.classList.remove("active");});
+      btn.classList.add("active");
+      state.useCase=btn.dataset.use;
+      generateBuild();
+      showToast(WORKLOADS[state.useCase].label + " workload selected.");
+    });
+  });
+});
+["resolution","cpuPreference","gpuPreference","ramTarget","storageTarget"].forEach(function(id){
+  $(id).addEventListener("change",function(){safeAction("Requirement update",generateBuild);});
+});
+$("optimizationMode").addEventListener("change",function(){
+  safeAction("Optimization mode",function(){
+    state.optimization=$("optimizationMode").value;
+    generateBuild();
+    showToast("Optimization mode updated.");
+  });
+});
+$("headroomToggle").addEventListener("change",function(){
+  safeAction("PSU headroom setting",function(){
+    state.headroom=$("headroomToggle").checked;
+    generateBuild();
+    showToast(state.headroom ? "Extra PSU headroom enabled." : "Extra PSU headroom disabled.");
+  });
+});
+
+bindClick("buildBtn","Generate optimized build",function(){
+  generateBuild();
+  document.getElementById("builder")?.scrollIntoView({behavior:"smooth",block:"start"});
+  showToast("Optimized build generated.");
+});
+bindClick("resetBtn","Reset builder",reset);
+bindClick("copyBtn","Copy build",copyBuild);
+bindClick("shareBtn","Share build",shareBuild);
+bindClick("printBtn","Export PDF",function(){window.print();});
+bindClick("exportJsonBtn","Export build JSON",exportJson);
+bindClick("randomBuildBtn","Generate sample build",function(){
+  var budgets=[60000,80000,100000,120000,150000,180000,220000];
+  $("budget").value=budgets[Math.floor(Math.random()*budgets.length)];
+  $("budgetRange").value=$("budget").value;
+  var uses=Object.keys(WORKLOADS);
+  state.useCase=uses[Math.floor(Math.random()*uses.length)];
+  document.querySelectorAll(".choice").forEach(function(x){x.classList.toggle("active",x.dataset.use===state.useCase);});
+  generateBuild();
+  document.getElementById("builder")?.scrollIntoView({behavior:"smooth"});
+  showToast("Sample build generated.");
+});
+bindClick("alternativesBtn","Compare alternatives",function(){
+  document.getElementById("alternatives")?.scrollIntoView({behavior:"smooth"});
+  showToast("Comparison section opened.");
+});
+bindClick("openAlternativesBtn","Open comparison",function(){
+  var dialog=$("compareDialog");
+  if(!dialog) throw new Error("Comparison dialog is missing.");
+  var builds=[
     ["Balanced","Keeps the platform even.",buildForMode("balanced"),"balanced"],
     ["GPU-first","Pushes more budget into graphics.",buildForMode("gpu"),"gpu-first"],
     ["CPU-first","Pushes more budget into CPU-heavy work.",buildForMode("cpu"),"cpu-first"]
@@ -420,16 +496,24 @@ $("openAlternativesBtn").addEventListener("click",function(){
   }).join("");
   $("compareGrid").querySelectorAll(".compare-use").forEach(function(btn){
     btn.addEventListener("click",function(){
-      state.optimization=btn.dataset.mode==="gpu-first"?"performance":btn.dataset.mode==="cpu-first"?"upgrade":"balanced";
-      $("optimizationMode").value=state.optimization;
-      generateBuild();
-      dialog.close();
-      showToast("Alternative configuration applied.");
+      safeAction("Alternative configuration",function(){
+        state.optimization=btn.dataset.mode==="gpu-first"?"performance":btn.dataset.mode==="cpu-first"?"upgrade":"balanced";
+        $("optimizationMode").value=state.optimization;
+        generateBuild();
+        if(typeof dialog.close==="function") dialog.close();
+        else dialog.removeAttribute("open");
+        showToast("Alternative configuration applied.");
+      });
     });
   });
-  dialog.showModal();
+  if(typeof dialog.showModal==="function") dialog.showModal();
+  else dialog.setAttribute("open","");
 });
-
-$("closeCompareBtn").addEventListener("click",function(){$("compareDialog").close();});
+bindClick("closeCompareBtn","Close comparison",function(){
+  var dialog=$("compareDialog");
+  if(!dialog) return;
+  if(typeof dialog.close==="function") dialog.close();
+  else dialog.removeAttribute("open");
+});
 
 loadFromUrl();$("budgetRange").value=$("budget").value;$("headroomToggle").checked=state.headroom;generateBuild();

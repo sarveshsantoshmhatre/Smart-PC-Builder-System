@@ -109,8 +109,7 @@ async function checkCloudAI() {
         return true;
   } catch (error) {
     cloudReady = false;
-    setStatus("Worker not reachable");
-        setStatus("Cloud AI unavailable");
+    setStatus("Cloud AI unavailable");
     return false;
   }
 }
@@ -173,7 +172,7 @@ async function askCloudAI(question) {
     setStatus("Cloud AI error");
   } finally {
     button.disabled = false;
-    button.querySelector("span").textContent = "Ask cloud AI";
+    button.querySelector("span").textContent = "Ask AI";
   }
 }
 

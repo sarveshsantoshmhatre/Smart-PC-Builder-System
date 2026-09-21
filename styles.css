@@ -983,3 +983,24 @@ footer{font-size:11px}
   .auth-brand strong{font-size:18px}
   .auth-socials{gap:8px}
 }
+
+.feature-locked{
+  position:relative;
+  opacity:.62;
+}
+.feature-locked::after{
+  content:"LOCKED";
+  position:absolute;
+  top:-8px;
+  right:-8px;
+  padding:3px 6px;
+  border:1px solid #4b5870;
+  border-radius:999px;
+  color:#aeb9c9;
+  background:#111b2a;
+  font:700 8px/1 "Space Grotesk",sans-serif;
+  letter-spacing:.06em;
+}
+.feature-locked:hover{
+  opacity:.82;
+}

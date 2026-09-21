@@ -125,3 +125,12 @@ The component catalog uses illustrative INR prices and specifications for demons
 HTML, CSS and vanilla JavaScript for the public site, plus a small serverless JavaScript Worker for cloud AI routing.
 
 Validated with GitHub Actions on pushes to `main`.
+
+
+## Live market data
+
+The public site can retrieve current market offers through the Worker \`/market/build\` endpoint. The Worker keeps the PriceYuge/DataYuge API key in its private Puter KV store under \`DATAYUGE_API_KEY\`; no market credential is shipped to the browser.
+
+Setup is documented in [MARKET-SETUP.md](MARKET-SETUP.md).
+
+The DataYuge documentation states that its prices are generally updated once per day, so the application labels this as the latest available market feed rather than promising tick-by-tick real-time pricing.

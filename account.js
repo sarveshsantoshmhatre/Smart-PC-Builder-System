@@ -186,14 +186,43 @@
     toast("Continuing as guest. Sign in anytime to unlock account features.");
   }
 
+  const PROTECTED_FEATURES = Object.freeze([
+    ["saveBuildBtn", "Saved builds"],
+    ["shareBtn", "Shareable builds"],
+    ["exportJsonBtn", "Build JSON export"],
+    ["printBtn", "PDF export"],
+    ["alternativesBtn", "Alternative build comparison"],
+    ["openAlternativesBtn", "Alternative build comparison"],
+    ["aiAskBtn", "AI Assistant"],
+    ["aiQuestion", "AI Assistant"]
+  ]);
+
   function updateProtectedFeatures(){
     const locked = !user;
-    const save = get("saveBuildBtn");
-    if (save){
-      save.classList.toggle("feature-locked", locked);
-      save.title = locked ? "Sign in to unlock saved builds" : "Save build to your account";
-      save.setAttribute("aria-label", save.title);
-    }
+    PROTECTED_FEATURES.forEach(([id, label]) => {
+      const node = get(id);
+      if (!node) return;
+      node.classList.toggle("feature-locked", locked);
+      node.setAttribute("data-protected-feature", label);
+      if (locked){
+        node.setAttribute("aria-disabled", "true");
+        node.title = "Sign in to unlock " + label;
+      }else{
+        node.removeAttribute("aria-disabled");
+        if (id === "saveBuildBtn") node.title = "Save build to your account";
+      }
+    });
+  }
+
+  function protectGuestFeature(event){
+    if (user) return;
+    const target = event.target?.closest?.("[data-protected-feature]");
+    if (!target) return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.stopImmediatePropagation) event.stopImmediatePropagation();
+    openAuthDialog("signin");
+    setAuthMessage("Sign in to unlock " + target.dataset.protectedFeature + ".", "error");
   }
 
   function openAuthDialog(mode){
@@ -601,6 +630,12 @@
     renderAccountButton();
     toast(error ? "Signed out locally." : "Signed out.");
   }
+
+  document.addEventListener("pointerdown", protectGuestFeature, true);
+  document.addEventListener("click", protectGuestFeature, true);
+  document.addEventListener("keydown", event => {
+    if (event.key === "Enter" || event.key === " ") protectGuestFeature(event);
+  }, true);
 
   accountBtn.addEventListener("click",() => {
     if (!authConfigReady()){

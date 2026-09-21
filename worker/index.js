@@ -9,12 +9,23 @@ let freeModelPromise = null;
 
 const OPEN_MODEL_HINTS = /qwen|llama|mistral|deepseek|gemma|phi|hermes/i;
 
+function corsHeaders() {
+  return {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type"
+  };
+}
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
       "Content-Type": "application/json; charset=utf-8",
-      "Cache-Control": "no-store"
+      "Cache-Control": "no-store",
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type"
     }
   });
 }
@@ -242,6 +253,8 @@ async function liveMarketForPart(part, apiKey) {
   return value;
 }
 
+router.options("/*page", async () => new Response(null, { status: 204, headers: corsHeaders() }));
+
 router.post("/market/build", async ({ request }) => {
   try {
     enforceRateLimit(request);
@@ -391,7 +404,10 @@ router.post("/chat", async ({ request }) => {
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
         "Cache-Control": "no-store",
-        "X-Content-Type-Options": "nosniff"
+        "X-Content-Type-Options": "nosniff",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type"
       }
     });
   } catch (error) {

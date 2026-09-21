@@ -134,3 +134,10 @@ The public site can retrieve current market offers through the Worker \`/market/
 Setup is documented in [MARKET-SETUP.md](MARKET-SETUP.md).
 
 The DataYuge documentation states that its prices are generally updated once per day, so the application labels this as the latest available market feed rather than promising tick-by-tick real-time pricing.
+
+## Account system
+
+The website includes a browser login flow powered by Puter.js. Users can sign in with a Puter account, see their current account in the header, sign out, and save up to 20 generated builds to their own app-scoped Puter KV store. Saved builds can be loaded or deleted from the account menu.
+
+The site itself does not collect or store passwords. Authentication is delegated to Puter's website authentication flow, and the frontend only uses Puter.js browser APIs.
+

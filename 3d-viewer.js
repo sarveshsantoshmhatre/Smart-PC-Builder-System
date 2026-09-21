@@ -1,7 +1,7 @@
-import * as THREE from "three";
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
 
 const root = document.getElementById("pcViewer");
-const status = document.getElementById("viewerStatus");
+const status = document.getElementById("viewerStatusBadge");
 const loading = document.getElementById("viewerLoading");
 const focusSelect = document.getElementById("focusPart");
 const autoRotateBtn = document.getElementById("autoRotateBtn");
@@ -70,7 +70,7 @@ function initScene() {
   if (!gl) {
     loading.textContent = "3D graphics are unavailable in this browser.";
     loading.classList.remove("hidden");
-    status.textContent = "WebGL unavailable";
+    if (status) status.textContent = "WebGL unavailable";
     return;
   }
 
@@ -292,7 +292,7 @@ function rebuild(build) {
   root.appendChild(label);
 
   loading.classList.add("hidden");
-  status.textContent = (build.workload || "Build") + " · " +
+  if (status) status.textContent = (build.workload || "Build") + " · "
     (build.resolution || "1440p") + " · interactive";
 }
 
@@ -338,7 +338,7 @@ function applyView(view) {
 }
 
 function toggleButton(button, active) {
-  button.classList.toggle("active", active);
+  if (button) button.classList.toggle("active", active);
 }
 
 function bindPointerControls() {
@@ -485,7 +485,7 @@ try {
   console.error("3D viewer initialization failed:", error);
   loading.textContent = "3D viewer failed to initialize. Check the browser console.";
   loading.classList.remove("hidden");
-  status.textContent = "3D error";
+  if (status) status.textContent = "3D error";
 }
 
 window.__SPB_3D__ = {

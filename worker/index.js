@@ -162,8 +162,8 @@ function normaliseTitle(text) {
 }
 
 function matchScore(query, title) {
-  const q = new Set(normaliseTitle(query).split(/\\s+/).filter(Boolean));
-  const t = new Set(normaliseTitle(title).split(/\\s+/).filter(Boolean));
+  const q = new Set(normaliseTitle(query).split(/\s+/).filter(Boolean));
+  const t = new Set(normaliseTitle(title).split(/\s+/).filter(Boolean));
   if (!q.size || !t.size) return 0;
   let hits = 0;
   q.forEach(token => { if (t.has(token)) hits += 1; });

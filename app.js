@@ -70,7 +70,7 @@ const WORKLOADS = {
   ai:{label:"AI / ML",cpuWeight:.38,gpuWeight:.62,ai:true,preferredRam:32}
 };
 
-const state = {useCase:"gaming",build:null,optimization:"balanced",headroom:true};
+const state = {useCase:"gaming",build:null,optimization:"balanced",headroom:true,manual:{cpuId:null,gpuId:null,ramId:null,storageId:null}};
 const $ = function(id){return document.getElementById(id);};
 const money = function(n){return "₹" + Math.round(Number(n)||0).toLocaleString("en-IN");};
 
@@ -82,10 +82,16 @@ function selectedStorageNeed(){return Number($("storageTarget").value);}
 function useCase(){return WORKLOADS[state.useCase];}
 
 function chooseRam(cpu){
+  var manualId=state.manual&&state.manual.ramId;
+  var manual=manualId&&CATALOG.ram.find(function(r){return r.id===manualId&&r.type===cpu.ramType&&r.gb>=selectedRamNeed();});
+  if(manual)return manual;
   var matches=CATALOG.ram.filter(function(r){return r.type===cpu.ramType&&r.gb>=selectedRamNeed();}).sort(function(a,b){return a.price-b.price;});
   return matches[0]||CATALOG.ram.find(function(r){return r.type===cpu.ramType;})||CATALOG.ram[1];
 }
 function chooseStorage(){
+  var manualId=state.manual&&state.manual.storageId;
+  var manual=manualId&&CATALOG.storage.find(function(s){return s.id===manualId&&s.tb>=selectedStorageNeed();});
+  if(manual)return manual;
   return CATALOG.storage.filter(function(s){return s.tb>=selectedStorageNeed();}).sort(function(a,b){return a.price-b.price;})[0]||CATALOG.storage[1];
 }
 function chooseMotherboard(cpu){
@@ -153,7 +159,9 @@ function fallbackBuild(budget){
 
 function generateBuild(){
   var budget=budgetValue(),workload=useCase(),best=null;
-  CATALOG.cpu.forEach(function(cpu){CATALOG.gpu.forEach(function(gpu){
+  var cpuPool=(state.manual&&state.manual.cpuId)?CATALOG.cpu.filter(function(x){return x.id===state.manual.cpuId;}):CATALOG.cpu;
+  var gpuPool=(state.manual&&state.manual.gpuId)?CATALOG.gpu.filter(function(x){return x.id===state.manual.gpuId;}):CATALOG.gpu;
+  (cpuPool.length?cpuPool:CATALOG.cpu).forEach(function(cpu){(gpuPool.length?gpuPool:CATALOG.gpu).forEach(function(gpu){
     var score=scorePair(cpu,gpu,budget,workload);
     if(!best||score>best.modelScore){
       var support=supportCost(cpu,gpu);
@@ -173,7 +181,7 @@ function generateBuild(){
   build.score=Math.max(52,Math.min(98,Math.round(46+build.cpu.score*.20+build.gpu.score*.35+build.ram.score*.08+build.motherboard.quality*.06+Math.min(10,Math.max(0,(build.budget-build.total)/build.budget*18)))));
   build.overBudget=build.total>build.budget;
   state.build=build;
-  window.__SMART_PC_BUILDER__={catalog:CATALOG,state:state,build:build,generateBuild:generateBuild};
+  window.__SMART_PC_BUILDER__={catalog:CATALOG,state:state,build:build,generateBuild:generateBuild,buildForMode:buildForMode,validation:validation,requiredPsu:requiredPsu};
   window.dispatchEvent(new CustomEvent("spb-build-updated",{detail:build}));
   localStorage.setItem("spb:lastBuild",JSON.stringify(build));
   renderBuild(build);
@@ -327,6 +335,10 @@ function renderAlternatives(){
 }
 function buildShareUrl(build){
   var p=new URLSearchParams({budget:String(build.budget),workload:state.useCase,resolution:build.resolution,cpu:$("cpuPreference").value,gpu:$("gpuPreference").value,ram:$("ramTarget").value,storage:$("storageTarget").value,optimize:state.optimization,headroom:state.headroom?"1":"0"});
+  if(state.manual&&state.manual.cpuId)p.set("mcpu",state.manual.cpuId);
+  if(state.manual&&state.manual.gpuId)p.set("mgpu",state.manual.gpuId);
+  if(state.manual&&state.manual.ramId)p.set("mram",state.manual.ramId);
+  if(state.manual&&state.manual.storageId)p.set("mstorage",state.manual.storageId);
   return location.origin+location.pathname+"?"+p.toString();
 }
 function updateUrl(build){try{history.replaceState(null,"",buildShareUrl(build));}catch(e){}}
@@ -360,10 +372,13 @@ function loadFromUrl(){
   if(["1","2","4"].includes(p.get("storage"))) $("storageTarget").value=p.get("storage");
   if(["balanced","performance","upgrade"].includes(p.get("optimize"))){state.optimization=p.get("optimize");$("optimizationMode").value=state.optimization;}
   state.headroom=p.get("headroom")!=="0";$("headroomToggle").checked=state.headroom;
+  state.manual={cpuId:p.get("mcpu")||null,gpuId:p.get("mgpu")||null,ramId:p.get("mram")||null,storageId:p.get("mstorage")||null};
 }
 function reset(){
   $("budget").value=100000;$("budgetRange").value=100000;$("resolution").value="1440p";$("cpuPreference").value="any";$("gpuPreference").value="any";$("ramTarget").value="32";$("storageTarget").value="1";$("optimizationMode").value="balanced";$("headroomToggle").checked=true;
-  state.useCase="gaming";state.optimization="balanced";state.headroom=true;document.querySelectorAll(".choice").forEach(function(x){x.classList.toggle("active",x.dataset.use==="gaming");});generateBuild();showToast("Builder reset.");
+  state.useCase="gaming";state.optimization="balanced";state.headroom=true;state.manual={cpuId:null,gpuId:null,ramId:null,storageId:null};
+  document.querySelectorAll(".choice").forEach(function(x){x.classList.toggle("active",x.dataset.use==="gaming");});
+  generateBuild();showToast("Builder reset.");
 }
 
 $("budget").addEventListener("input",function(){var value=budgetValue();$("budgetRange").value=value;$("budgetFormatted").textContent=money(value);});

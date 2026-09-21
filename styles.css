@@ -660,3 +660,149 @@ footer{font-size:11px}
   .choice small{font-size:11px}
   .viewer-tool,.viewer-controls .icon-btn{font-size:11px}
 }
+
+
+/* Account system */
+.account-btn{
+  min-width:96px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+}
+.account-btn.signed-in{
+  min-width:150px;
+  justify-content:flex-start;
+  padding-left:10px;
+}
+.account-avatar{
+  width:26px;
+  height:26px;
+  border-radius:50%;
+  object-fit:cover;
+  border:1px solid rgba(255,255,255,.16);
+  background:#182235;
+  flex:0 0 auto;
+}
+.account-label{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.account-menu{
+  position:fixed;
+  z-index:120;
+  width:min(340px,calc(100vw - 24px));
+  padding:16px;
+  border:1px solid #3a4b67;
+  border-radius:18px;
+  background:linear-gradient(155deg,#121d2e,#09111d);
+  box-shadow:0 28px 90px rgba(0,0,0,.5);
+}
+.account-menu[hidden]{display:none}
+.account-profile{
+  display:flex;
+  align-items:center;
+  gap:11px;
+  padding-bottom:13px;
+  border-bottom:1px solid rgba(255,255,255,.07);
+}
+.account-profile img{
+  width:42px;height:42px;border-radius:50%;
+  object-fit:cover;background:#182235;
+  border:1px solid rgba(255,255,255,.14);
+}
+.account-profile strong{
+  display:block;
+  color:#f4f7fb;
+  font-size:14px;
+}
+.account-profile small{
+  display:block;
+  margin-top:3px;
+  color:#8998ae;
+  font-size:11px;
+  overflow-wrap:anywhere;
+}
+.account-actions{
+  display:grid;
+  gap:8px;
+  margin-top:13px;
+}
+.account-action{
+  width:100%;
+  min-height:42px;
+  padding:10px 12px;
+  border:1px solid #2d3e57;
+  border-radius:11px;
+  background:rgba(255,255,255,.025);
+  color:#dce4ee;
+  text-align:left;
+  font-size:12px;
+}
+.account-action:hover{
+  border-color:#536b8d;
+  background:rgba(255,255,255,.06);
+}
+.account-action.primary{
+  border-color:transparent;
+  background:linear-gradient(135deg,#8060ff,#42d9c1);
+  color:#fff;
+  font-weight:700;
+}
+.saved-builds{
+  display:grid;
+  gap:9px;
+  max-height:340px;
+  overflow:auto;
+  margin-top:12px;
+}
+.saved-build{
+  padding:11px;
+  border:1px solid #2c3c54;
+  border-radius:12px;
+  background:rgba(255,255,255,.022);
+}
+.saved-build strong{
+  display:block;
+  font-size:12px;
+  color:#e7edf5;
+}
+.saved-build small{
+  display:block;
+  margin-top:4px;
+  color:#8b99ad;
+  font-size:10px;
+}
+.saved-build-actions{
+  display:flex;
+  gap:7px;
+  margin-top:9px;
+}
+.saved-build-actions button{
+  flex:1;
+  min-height:38px;
+  border:1px solid #2d3e57;
+  border-radius:9px;
+  background:#111a29;
+  color:#d4deea;
+  font-size:10px;
+}
+.saved-build-actions button:hover{
+  border-color:#536b8d;
+}
+.account-empty{
+  padding:18px 12px;
+  text-align:center;
+  color:#8290a6;
+  font-size:11px;
+  border:1px dashed #2a3a52;
+  border-radius:12px;
+}
+.account-login-note{
+  margin:0;
+  color:#93a2b7;
+  font-size:11px;
+  line-height:1.55;
+}

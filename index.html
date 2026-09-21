@@ -32,6 +32,7 @@
 
       <div class="top-actions">
         <button class="ghost-btn" id="shareBtn" type="button">Share build</button>
+        <button class="ghost-btn account-btn" id="accountBtn" type="button">Sign in</button>
         <button class="primary-btn compact" id="printBtn" type="button">Export PDF</button>
       </div>
     </header>
@@ -146,6 +147,7 @@
               </div>
               <div class="result-actions">
                 <span class="status-badge" id="compatBadge"><i></i> 7 / 7 checks passed</span>
+                <button class="icon-btn" id="saveBuildBtn" type="button" title="Save build to your account">Save build</button>
                 <button class="icon-btn" id="copyBtn" type="button" title="Copy build">Copy build</button>
               </div>
             </div>
@@ -297,9 +299,11 @@
     </div>
   </dialog>
 
+  <script src="https://js.puter.com/v2/"></script>
   <script src="app.js?v=20260921"></script>
   <script src="puter-config.js?v=20260921"></script>
   <script src="enhancements.js?v=20260921"></script>
+  <script src="account.js?v=20260921"></script>
   <script type="module" src="3d-viewer.js?v=20260921"></script>
   <script type="module" src="puter-ai.js?v=20260921"></script>
 </body>

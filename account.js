@@ -232,8 +232,10 @@
 
     try{
       if (authMode === "signin"){
-        const { error } = await supa.auth.signInWithPassword({ email, password });
+        const { data, error } = await supa.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        user = data?.user || null;
+        renderAccountButton();
         closeAuthDialog();
         toast("Signed in successfully.");
       }else{
@@ -245,6 +247,8 @@
         if (error) throw error;
 
         if (data?.session){
+          user = data?.user || data.session.user || null;
+          renderAccountButton();
           closeAuthDialog();
           toast("Account created.");
         }else{
@@ -322,6 +326,8 @@
       accountBtn.title = "Sign in or create an account";
       return;
     }
+
+    accountBtn.textContent = "Account";
 
     const avatar = avatarUrl(user);
     if (avatar){

@@ -189,7 +189,10 @@
     try{
       const { error } = await supa.auth.signInWithOAuth({
         provider,
-        options: { redirectTo: redirectUrl() }
+        options: {
+          redirectTo: redirectUrl(),
+          ...(provider === "azure" ? { scopes: "email" } : {})
+        }
       });
       if (error) throw error;
     }catch(error){

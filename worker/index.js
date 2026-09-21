@@ -357,7 +357,7 @@ Suggest changes that improve the build for the selected goal while staying withi
     return json({ error: error?.message || "AI optimizer failed." }, 500);
   }
 });
-\nrouter.get("/health", async () => {
+router.get("/health", async () => {
   return {
     ok: true,
     service: "Smart PC Builder AI",
